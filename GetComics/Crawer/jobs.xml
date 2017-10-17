@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<quartz>
+  <service>Crawer</service>
+  <namespace>Crawer.Jobs.{0}</namespace>
+  <jobs>
+    <!--漫画入库-->
+    <!--<job name="Comic_Job">0 0/1 * * * ? </job>-->
+
+    <!--QQ章节列表-->
+    <!--<job name="QQ_Chapter_Job">0 0/1 * * * ? </job>-->
+    <!--QQ章节图片-->
+    <job name="QQ_Page_Job">0 0/1 * * * ? </job>
+
+   
+
+  </jobs>
+</quartz>
