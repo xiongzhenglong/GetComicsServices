@@ -70,9 +70,6 @@
       <HintPath>..\packages\HtmlAgilityPack.1.6.0\lib\Net45\HtmlAgilityPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Framework.Common">
-      <HintPath>..\Dll\Framework.Common.dll</HintPath>
-    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
@@ -80,6 +77,9 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="QD.Framework">
+      <HintPath>..\Dll\QD.Framework.dll</HintPath>
     </Reference>
     <Reference Include="Quartz, Version=2.5.0.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>..\packages\Quartz.2.5.0\lib\net40\Quartz.dll</HintPath>
@@ -95,6 +95,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="ThoughtWorks.Selenium.Core, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.RC.3.1.0\lib\net40\ThoughtWorks.Selenium.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Topshelf, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <HintPath>..\packages\Topshelf.4.0.3\lib\net452\Topshelf.dll</HintPath>
       <Private>True</Private>
@@ -123,9 +127,6 @@
   <ItemGroup>
     <Compile Include="JobConfig.cs" />
     <Compile Include="Jobs\Comic_Job.cs" />
-    <Compile Include="Jobs\dongmanmanhua\dongman_Chapter_Job.cs" />
-    <Compile Include="Jobs\dongmanmanhua\dongman_Page_Job.cs" />
-    <Compile Include="Jobs\DownAndUp_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Chapter_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job.cs" />
     <Compile Include="Program.cs" />
@@ -135,9 +136,6 @@
     <None Include="App.config" />
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>
-    </None>
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
@@ -157,10 +155,6 @@
     <ProjectReference Include="..\ExcelModel\ExcelModel.csproj">
       <Project>{b15d2120-8df8-4732-b62c-39698405562f}</Project>
       <Name>ExcelModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Framework.Common\Framework.Common.csproj">
-      <Project>{c5a083fb-3ba2-4e32-86a4-bc3e6c2de116}</Project>
-      <Name>Framework.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Lib\Lib.csproj">
       <Project>{548138fb-44e8-499c-86e6-0d000a4b9e93}</Project>
