@@ -56,6 +56,7 @@
     <Compile Include="Helper\HttpHelper.cs" />
     <Compile Include="Helper\HttpWebHelper.cs" />
     <Compile Include="Helper\JsonHelper.cs" />
+    <Compile Include="Helper\UcHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +71,10 @@
     <ProjectReference Include="..\ExcelModel\ExcelModel.csproj">
       <Project>{b15d2120-8df8-4732-b62c-39698405562f}</Project>
       <Name>ExcelModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UFileSDK\UFileSDK.csproj">
+      <Project>{2f0d381b-c0c8-4da5-84c5-176f58c885c7}</Project>
+      <Name>UFileSDK</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

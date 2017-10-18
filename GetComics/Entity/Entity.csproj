@@ -57,6 +57,7 @@
     <Compile Include="Comic.cs" />
     <Compile Include="Err_ChapterJob.cs" />
     <Compile Include="Err_ComicJob.cs" />
+    <Compile Include="Err_PageJob.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

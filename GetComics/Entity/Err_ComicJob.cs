@@ -10,6 +10,7 @@ namespace Entity
     public class Err_ComicJob:BaseEntity
     {
         public string bookurl { get; set; }
+    
 
         public ErrComic errtype { get; set; }
 

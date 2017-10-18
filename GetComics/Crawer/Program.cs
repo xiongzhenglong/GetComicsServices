@@ -19,6 +19,7 @@ namespace Crawer
         {
             try
             {
+               
                 container = JobConfig.ConfigureContainer(new ContainerBuilder()).Build();
 
                 HostFactory.Run(config =>

@@ -21,11 +21,18 @@ namespace CrawerEnum
 
     public enum ErrComic
     {
-        解析出错
+        解析出错,
+        图片出错
     }
 
     public enum ErrChapter
     {
-        解析出错
+        解析出错,
+        图片出错
+    }
+
+    public enum ErrPage
+    {
+        限制访问
     }
 }

@@ -9,11 +9,11 @@ namespace Entity
 {
     public class BaseEntity
     {
-        public BaseEntity()
-        {
-            Id = Guid.NewGuid().ToString("N");
-        }
-        [NonAutoIncrement]
-        public string Id { get; set; }
+        //public BaseEntity()
+        //{
+        //    Id = Guid.NewGuid().ToString("N");
+        //}
+        [AutoIncrement]
+        public int Id { get; set; }
     }
 }
