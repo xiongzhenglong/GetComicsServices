@@ -24,7 +24,7 @@ namespace Entity
         /// <summary>
         /// 漫画id
         /// </summary>
-        public string comicid { get; set; }
+        public int comicid { get; set; }
         /// <summary>
         /// 章节id
         /// </summary>
@@ -36,7 +36,8 @@ namespace Entity
         /// <summary>
         /// 章节封面
         /// </summary>
-        public string chapterimg { get; set; }
+        public string chaptersource { get; set; }
+        public string chapterlocal { get; set; }
         /// <summary>
         /// 序号
         /// </summary>

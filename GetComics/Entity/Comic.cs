@@ -38,7 +38,8 @@ namespace Entity
         /// <summary>
         /// 封面
         /// </summary>
-        public string comiccover { get; set; }
+        public string comiccoversource { get; set; }
+        public string comiccoverlocal { get; set; }
 
         /// <summary>
         /// 作者

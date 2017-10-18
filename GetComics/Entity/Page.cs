@@ -21,7 +21,7 @@ namespace Entity
         #endregion
 
         #region 基本字段
-        public string chapterid { get; set; }
+        public int chapterid { get; set; }
 
         public int sort { get; set; }
         /// <summary>

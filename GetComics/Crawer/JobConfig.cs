@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extras.Quartz;
+using Framework.Common.Extension;
 using log4net;
-using QD.Framework;
 using Quartz;
 using Quartz.Spi;
 using System;

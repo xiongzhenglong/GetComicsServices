@@ -5,6 +5,7 @@ using CrawerEnum;
 using Entity;
 using Framework.Common.Extension;
 using Lib.Helper;
+using log4net;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace Crawer.Jobs
     [DisallowConcurrentExecution]
     public class QQ_Page_Job: IJob
     {
+        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Page_Job));
         MsSqlContext dbcontext;
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
         public QQ_Page_Job()
@@ -31,10 +33,16 @@ namespace Crawer.Jobs
         public void Execute(IJobExecutionContext context)
         {
             DateTime dt = DateTime.Now;
-            string shortdate = dt.ToString("yyyy-MM-dd");            
+            string shortdate = dt.ToString("yyyy-MM-dd");
+            string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");         
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).ToList();
-            
+            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
+            List<int> ids = cplst.Select(x => x.Id).ToList();
+            dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
+            {
+                downstatus = DownChapter.处理完链接,
+                modify = dt
+            });
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var cp in cplst)
             {
@@ -47,6 +55,9 @@ namespace Crawer.Jobs
                     string key = match.Groups["key1"].Value;
                     if (string.IsNullOrEmpty(key))
                     {
+                        cp.downstatus = DownChapter.待处理链接;
+                        cp.modify = dt;
+                        dbcontext.Update(dt);
                         Err_ChapterJob err = new Err_ChapterJob();
                         err.bookurl = cp.chapterurl;
                         err.source = cp.source;
@@ -75,8 +86,7 @@ namespace Crawer.Jobs
                                 pagesource = t.picture[i].url
                             });
                         }
-                        cp.downstatus = DownChapter.处理完链接;
-                        cp.modify = dt;
+                       
                         dbcontext.Update(cp);
                         dbcontext.BulkInsert(pglst);
                     }
@@ -84,6 +94,10 @@ namespace Crawer.Jobs
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex.Message);
+                    cp.downstatus = DownChapter.待处理链接;
+                    cp.modify = dt;
+                    dbcontext.Update(cp);
                     Err_ChapterJob err = new Err_ChapterJob();
                     err.bookurl = cp.chapterurl;
                     err.source = cp.source;

@@ -4,6 +4,7 @@ using CrawerEnum;
 using Entity;
 using Framework.Common.Extension;
 using Lib.Helper;
+using log4net;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace Crawer.Jobs
     [DisallowConcurrentExecution]
     public class QQ_Chapter_Job: IJob
     {
+        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Chapter_Job));
         MsSqlContext dbcontext;
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
         public QQ_Chapter_Job()
@@ -32,9 +34,16 @@ namespace Crawer.Jobs
         {
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
+            string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.shortdate == shortdate).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.shortdate == shortdate).Take(200).ToList();
+            List<int> ids = comiclst.Select(x => x.Id).ToList();
+            dbcontext.Update<Comic>(a =>ids.Contains(a.Id), a => new Comic()
+            {
+                shortdate= yesterday,
+                modify = dt
+            });
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var comic in comiclst)
             {
@@ -67,7 +76,8 @@ namespace Crawer.Jobs
                                 source = comic.source,
                                 downstatus = DownChapter.待处理链接,
                                 isvip = "0",
-                                chapterimg = "",
+                                chaptersource = "",
+                                chapterlocal="",
                                 modify = dt,
                                 shortdate = shortdate,
                             });
@@ -75,6 +85,10 @@ namespace Crawer.Jobs
                     }
                     catch (Exception ex)
                     {
+                        logger.Error(ex.Message);
+                        comic.shortdate = shortdate;
+                        comic.modify = dt;
+                        dbcontext.Update(comic);
                         Err_ChapterJob err = new Err_ChapterJob();
                         err.bookurl = comic.bookurl;
                         err.source = comic.source;
