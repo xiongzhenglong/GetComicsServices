@@ -258,7 +258,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Chapter> plst = cpq.Where(a => a.chaptersource.Length == 0).TakePage(1, 20).ToList();
+            List<Chapter> plst = cpq.Where(a => a.chapterlocal.Length == 0).TakePage(1, 20).ToList();
             HttpWebHelper web = new HttpWebHelper();
             foreach (var p in plst)
             {
