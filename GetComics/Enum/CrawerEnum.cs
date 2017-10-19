@@ -35,4 +35,17 @@ namespace CrawerEnum
     {
         限制访问
     }
+
+    public enum NoticeType
+    {
+        章节更新,
+        目录变更
+    }
+
+    public enum NoticeStatus
+    {
+        等待处理=1,
+        等待发送,
+        已发送
+    }
 }

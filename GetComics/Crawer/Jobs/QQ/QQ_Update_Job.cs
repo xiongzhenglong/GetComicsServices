@@ -39,6 +39,7 @@ namespace Crawer.Jobs.QQ
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
+            IQuery<Notice> nq = dbcontext.Query<Notice>();
             List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.recrawer==false).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
@@ -86,22 +87,73 @@ namespace Crawer.Jobs.QQ
                             });
                         }
                         int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
-                        int add = chapterlst.Except(cplst, new Chapter_Comparer()).Count();  // 新增
+                        List<Chapter> add = chapterlst.Except(cplst, new Chapter_Comparer()).ToList();  // 新增
 
-                        //context.Delete<User>(a => a.Age > 18);
+                     
                         if (delete > 0)
                         {
-                            //dbcontext.Delete<Chapter>(a=>a.comicid==)
+                            List<string> idlst = cplst.Select(x => x.chapterid).ToList();
+                            dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
+                            dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
+                            if (chapterlst.Count > 0)
+                            {
+                                dbcontext.BulkInsert(chapterlst);
+                            }
+                            Notice notice = new Notice();
+                            notice.noticeid = comic.comicid;
+                            notice.noticestatus = NoticeStatus.等待处理;
+                            notice.noticetype = NoticeType.目录变更;
+                            notice.source = comic.source;
+                            notice.shortdate = shortdate;
+                            notice.modify = dt;
+                            var nqwait= nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
+                            if (nqwait == null)
+                            {
+                                dbcontext.Insert(notice);
+                            }
+                          
+                            continue;
+                            
                         }
-                        if (delete == 0 && add == 0)
+                        else
                         {
+                       
+                            List<Chapter> mvadd = chapterlst.Except(add, new Chapter_Comparer()).ToList();
                             string cplststr = string.Join(",", cplst.Select(x => x.chapterid).ToArray());
-                            string chapterlststr = string.Join(",", chapterlst.Select(x => x.chapterid).ToArray());
+                            string chapterlststr = string.Join(",", mvadd.Select(x => x.chapterid).ToArray());
                             if (cplststr != chapterlststr) // 调序
                             {
-                                
+                                List<string> idlst = cplst.Select(x => x.chapterid).ToList();
+                                dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
+                                dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
+                                if (chapterlst.Count > 0)
+                                {
+                                    dbcontext.BulkInsert(chapterlst);
+                                }
+                                Notice notice = new Notice();
+                                notice.noticeid = comic.comicid;
+                                notice.noticestatus = NoticeStatus.等待处理;
+                                notice.noticetype = NoticeType.目录变更;
+                                notice.source = comic.source;
+                                notice.shortdate = shortdate;
+                                notice.modify = dt;
+                                var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
+                                if (nqwait == null)
+                                {
+                                    dbcontext.Insert(notice);
+                                }
+
+                                continue;
                             }
+
+                            if (mvadd.Count>0)
+                            {
+                                dbcontext.BulkInsert(mvadd);
+                            }
+                           
                         }
+
+                        
                         
 
 
@@ -126,11 +178,7 @@ namespace Crawer.Jobs.QQ
                 }
             }
 
-            //if (chapterlst.Count > 0)
-            //{
-
-            //    dbcontext.BulkInsert(chapterlst);
-            //}
+            
         }
 
     }
