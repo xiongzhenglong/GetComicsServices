@@ -9,14 +9,16 @@
     <!--QQ章节列表-->
     <!--<job name="QQ_Chapter_Job">0 0/1 * * * ? </job>-->
     <!--QQ章节图片-->
-    <!--<job name="QQ_Page_Job">0 0/1 * * * ? </job>-->
+    <job name="QQ_Page_Job">* * * * * ? </job>
 
     <!--dongman章节列表-->
     <!--<job name="dongman_Chapter_Job">0 0/1 * * * ? </job>-->
     <!--dongman章节图片-->
-    <job name="dongman_Page_Job">* * * * * ? </job>
-    
-    <!--<job name="DownAndUpPage_Job">0 0/1 * * * ? </job>-->
+    <!--<job name="dongman_Page_Job">* * * * * ? </job>-->
+
+    <!--<job name="DownAndUpChapter_Job">0 0/1 * * * ? </job>
+    <job name="DownAndUpComic_Job">0 0/1 * * * ? </job>
+    <job name="DownAndUpPage_Job">0 0/1 * * * ? </job>-->
 
 
 

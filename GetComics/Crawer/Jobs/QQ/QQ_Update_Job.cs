@@ -7,48 +7,51 @@ using Lib.Helper;
 using log4net;
 using Quartz;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Crawer.Jobs
+namespace Crawer.Jobs.QQ
 {
     /// <summary>
-    /// 爬取章节列表
+    /// 更新章节
     /// </summary>
     [DisallowConcurrentExecution]
-    public class QQ_Chapter_Job: IJob
+    public  class QQ_Update_Job:IJob
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Chapter_Job));
+        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Update_Job));
         MsSqlContext dbcontext;
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
-        public QQ_Chapter_Job()
+        public QQ_Update_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
-
         }
-
         public void Execute(IJobExecutionContext context)
         {
+            List<string> list = new List<string>();
+            list.Add("123");
+            
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.shortdate == shortdate).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.recrawer==false).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
-            dbcontext.Update<Comic>(a =>ids.Contains(a.Id), a => new Comic()
+            dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
-                shortdate= yesterday,
+                recrawer = true,
                 modify = dt
             });
-            List<Chapter> chapterlst = new List<Chapter>();
+           
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ).ToList();
-                if (cplst.Count==0)
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ && a.shortdate !=shortdate).ToList();
+                List<Chapter> chapterlst = new List<Chapter>();
+                if (cplst.Count >0)
                 {
                     try
                     {
@@ -67,7 +70,7 @@ namespace Crawer.Jobs
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = comic.source +comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
                                 chaptername = matches[i].Groups["key3"].Value.Trim(),
                                 chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
                                 sort = i + 1,
@@ -77,11 +80,31 @@ namespace Crawer.Jobs
                                 downstatus = DownChapter.待处理链接,
                                 isvip = "0",
                                 chaptersource = "",
-                                chapterlocal="",
+                                chapterlocal = "",
                                 modify = dt,
                                 shortdate = shortdate,
                             });
                         }
+                        int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
+                        int add = chapterlst.Except(cplst, new Chapter_Comparer()).Count();  // 新增
+
+                        //context.Delete<User>(a => a.Age > 18);
+                        if (delete > 0)
+                        {
+                            //dbcontext.Delete<Chapter>(a=>a.comicid==)
+                        }
+                        if (delete == 0 && add == 0)
+                        {
+                            string cplststr = string.Join(",", cplst.Select(x => x.chapterid).ToArray());
+                            string chapterlststr = string.Join(",", chapterlst.Select(x => x.chapterid).ToArray());
+                            if (cplststr != chapterlststr) // 调序
+                            {
+                                
+                            }
+                        }
+                        
+
+
                     }
                     catch (Exception ex)
                     {
@@ -99,15 +122,32 @@ namespace Crawer.Jobs
                         err = dbcontext.Insert(err);
                         continue;
                     }
-                    
+
                 }
             }
 
-            if (chapterlst.Count > 0)
-            {
+            //if (chapterlst.Count > 0)
+            //{
 
-                dbcontext.BulkInsert(chapterlst);
-            }
+            //    dbcontext.BulkInsert(chapterlst);
+            //}
+        }
+
+    }
+
+    public class Chapter_Comparer: IEqualityComparer<Chapter>
+    {
+        public bool Equals(Chapter x,Chapter y)
+        {
+            if (Object.ReferenceEquals(x, y)) return true;
+            return x != null && y != null && x.chapterid == y.chapterid;
+           
+        }
+
+        public int GetHashCode(Chapter obj)
+        {
+            int hashchapterid = obj.chapterid.GetHashCode();
+            return hashchapterid;
         }
     }
 }

@@ -112,6 +112,7 @@
     <Compile Include="Jobs\DownAndUp_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Chapter_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job.cs" />
+    <Compile Include="Jobs\QQ\QQ_Update_Job.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -60,7 +60,7 @@ namespace Crawer.Jobs
                         {
                             pglst.Add(new Page()
                             {
-                                chapterid = cp.Id,
+                                chapterid = cp.chapterid,
                                 modify = dt,
                                 shortdate = shortdate,
                                 sort = i + 1,

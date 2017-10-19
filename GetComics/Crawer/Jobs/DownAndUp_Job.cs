@@ -144,7 +144,7 @@ namespace Crawer.Jobs
 
                 try
                 {
-                    Stream stream = web.GetStream("http://cdn.sns.dongmanmanhua.cn/20150119_288/1421677325732TxLNo_JPEG/thumbnail_ipad.jpg");
+                    Stream stream = web.GetStream(p.pagesource);
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory +"DownLoadImgs/"+ p.Id +".jpg";
@@ -153,7 +153,7 @@ namespace Crawer.Jobs
                     p.pagelocal = localimg;
                     p.modify = dt;
                     dbcontext.Update(p);
-                    dbcontext.Update<Chapter>(a => a.Id == p.chapterid, a => new Chapter()
+                    dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
                     {
                         downstatus = DownChapter.上传完图片,
                         modify = dt
@@ -167,7 +167,7 @@ namespace Crawer.Jobs
                     //chapter.retry = chapter.retry + 1;
                     //chapter.modify = dt;
                     //dbcontext.Update(chapter);
-                    dbcontext.Update<Chapter>(a => a.Id == p.chapterid, a => new Chapter()
+                    dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
                     {
                         retry = a.retry + 1,
                         modify = dt

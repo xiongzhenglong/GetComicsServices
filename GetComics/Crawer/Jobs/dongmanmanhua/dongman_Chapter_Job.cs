@@ -47,7 +47,7 @@ namespace Crawer.Jobs
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.Id && a.source == Source.dongmanmanhua).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.dongmanmanhua).ToList();
                 if (cplst.Count == 0)
                 {
                     try
@@ -77,12 +77,12 @@ namespace Crawer.Jobs
 
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = comic.comicid + "_" + sort,
+                                chapterid = comic.source+"_"+comic.comicid + "_" + sort,
                                 chaptername = chaptername,
                                 chapterurl = "https:" + chapterurl,
                                 sort = sort,
 
-                                comicid = comic.Id,
+                                comicid = comic.comicid,
                                 retry = 0,
                                 source = comic.source,
                                 downstatus = DownChapter.待处理链接,
@@ -124,7 +124,7 @@ namespace Crawer.Jobs
                                     chapterurl = "https:" + chapterurl,
                                     sort = sort,
 
-                                    comicid = comic.Id,
+                                    comicid = comic.comicid,
                                     retry = 0,
                                     source = comic.source,
                                     downstatus = DownChapter.待处理链接,
