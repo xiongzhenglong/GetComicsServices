@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿using ApiModel.QQ;
 using Chloe;
 using Chloe.SqlServer;
@@ -7,6 +6,8 @@ using Entity;
 using Framework.Common.Extension;
 using Lib.Helper;
 using log4net;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,18 @@ namespace Crawer.Jobs
         private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Page_Job));
         MsSqlContext dbcontext;
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
+        static IWebDriver selenium;
+        static ChromeOptions chromeOptions = new ChromeOptions();
         public QQ_Page_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
+
+            if (selenium == null)
+            {
+                chromeOptions.AddArguments("--headless");
+                chromeOptions.AddArguments("window-size=1200x600");
+                selenium = new ChromeDriver(chromeOptions);
+            }
         }
 
         public void Execute(IJobExecutionContext context)
@@ -36,7 +46,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");         
-            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
+            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//
             List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
@@ -91,122 +101,81 @@ namespace Crawer.Jobs
                         dbcontext.Update(cp);
                         dbcontext.BulkInsert(pglst);
                     }
-                    
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex.Message);
-                    cp.downstatus = DownChapter.待处理链接;
-                    cp.modify = dt;
-                    dbcontext.Update(cp);
-                    Err_ChapterJob err = new Err_ChapterJob();
-                    err.bookurl = cp.chapterurl;
-                    err.source = cp.source;
-                    err.errtype = ErrChapter.解析出错;
-                    err.modify = dt;
-                    err.shortdate = shortdate;
-                    err.message = ex.Message;
-                    err = dbcontext.Insert(err);
-                    continue;
-                }
-            }
-        }
-    }
-}
-=======
-﻿using ApiModel.QQ;
-using Chloe;
-using Chloe.SqlServer;
-using CrawerEnum;
-using Entity;
-using Framework.Common.Extension;
-using Lib.Helper;
-using log4net;
-using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace Crawer.Jobs
-{
-    /// <summary>
-    /// 爬取章节图片
-    /// </summary>
-    [DisallowConcurrentExecution]
-    public class QQ_Page_Job: IJob
-    {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Page_Job));
-        MsSqlContext dbcontext;
-        static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
-        public QQ_Page_Job()
-        {
-            dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
-        }
-
-        public void Execute(IJobExecutionContext context)
-        {
-            DateTime dt = DateTime.Now;
-            string shortdate = dt.ToString("yyyy-MM-dd");
-            string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");         
-            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
-            List<int> ids = cplst.Select(x => x.Id).ToList();
-            dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
-            {
-                downstatus = DownChapter.处理完链接,
-                modify = dt
-            });
-            List<Chapter> chapterlst = new List<Chapter>();
-            foreach (var cp in cplst)
-            {
-                try
-                {
-                    string chapterpage = cp.chapterurl.Replace("http://ac.qq.com", "");
-                    var imgdata = _helper.Get(null, chapterpage);
-                    Regex rex = new Regex("var DATA        = '(?<key1>.*?)',");
-                    Match match = rex.Match(imgdata);
-                    string key = match.Groups["key1"].Value;
-                    if (string.IsNullOrEmpty(key))
+                    else
                     {
-                        cp.downstatus = DownChapter.待处理链接;
-                        cp.modify = dt;
-                        dbcontext.Update(dt);
-                        Err_ChapterJob err = new Err_ChapterJob();
-                        err.bookurl = cp.chapterurl;
-                        err.source = cp.source;
-                        err.errtype = ErrChapter.解析出错;
-                        err.modify = dt;
-                        err.shortdate = shortdate;
-                        err.message = "DATA解析失败";
-                        err = dbcontext.Insert(err);
-                        continue;
-                    }
-                    var s = DecodeHelper.QQPageDecode(key.Substring(1));
-                    var t = JsonHelper.DeserializeJsonToObject<QQ_Page_Api>(s);
-                    if (t.chapter.vipStatus ==1 )
-                    {
+                       
+                        selenium.Navigate().GoToUrl(cp.chapterurl);
+                        IList<IWebElement> frames = selenium.FindElements(By.TagName("iframe"));
+                        IWebElement controlPanelFrame = null;  //commentFrame  ptlogin_iframe
+                        foreach (var frame in frames)
+                        {
+                            if (frame.GetAttribute("id") == "iframeAll")
+                            {
+                                controlPanelFrame = frame;
+                                break;
+                            }
+                        }
+                        if (controlPanelFrame != null) //QQ登录 
+                        {
+                            selenium.SwitchTo().Frame(controlPanelFrame);
+
+                            IReadOnlyCollection<IWebElement> switchtoElement = selenium.FindElements(By.Id("switcher_plogin"));
+                            if (switchtoElement != null && switchtoElement.Count > 0) {
+                                switchtoElement.First().Click();
+                            }
+                            selenium.FindElement(By.Id("u")).Clear();
+                            selenium.FindElement(By.Id("u")).SendKeys("2806126975");
+                            selenium.FindElement(By.Id("p")).Clear();
+                            selenium.FindElement(By.Id("p")).SendKeys("rby123456");
+
+                            selenium.FindElement(By.Id("login_button")).Click();
+                        }
+                        //自动购买
+                        IReadOnlyCollection<IWebElement> checkAutoElement = selenium.FindElements(By.Id("check_auto_next"));
+                        IReadOnlyCollection<IWebElement> singlBbuyElement = selenium.FindElements(By.ClassName("single_buy"));
+                        if (checkAutoElement != null && singlBbuyElement != null&& checkAutoElement.Count>0 && singlBbuyElement.Count> 0)
+                        {
+                            checkAutoElement.First().Click();
+                            singlBbuyElement.First().Click();
+                        }
+                        Match match1 = rex.Match(selenium.PageSource);
+                        key = match1.Groups["key1"].Value;
+                        if (string.IsNullOrEmpty(key))
+                        {
+                            cp.downstatus = DownChapter.待处理链接;
+                            cp.modify = dt;
+                            dbcontext.Update(dt);
+                            Err_ChapterJob err = new Err_ChapterJob();
+                            err.bookurl = cp.chapterurl;
+                            err.source = cp.source;
+                            err.errtype = ErrChapter.解析出错;
+                            err.modify = dt;
+                            err.shortdate = shortdate;
+                            err.message = "DATA解析失败";
+                            err = dbcontext.Insert(err);
+                            continue;
+                        }
+
+                        s = DecodeHelper.QQPageDecode(key.Substring(1));
+                        t = JsonHelper.DeserializeJsonToObject<QQ_Page_Api>(s);
                         List<Page> pglst = new List<Page>();
                         for (int i = 0; i < t.picture.Count; i++)
                         {
                             pglst.Add(new Page()
                             {
-                                chapterid = cp.Id,
+                                chapterid = cp.chapterid,
                                 modify = dt,
                                 shortdate = shortdate,
-                                sort = i+1,
+                                sort = i + 1,
                                 source = cp.source,
-                                pagelocal="",
+                                pagelocal = "",
                                 pagesource = t.picture[i].url
                             });
                         }
-                       
+
                         dbcontext.Update(cp);
                         dbcontext.BulkInsert(pglst);
-                    }
-                    
+                    }                    
                 }
                 catch (Exception ex)
                 {
@@ -228,4 +197,3 @@ namespace Crawer.Jobs
         }
     }
 }
->>>>>>> ca6b0bb55883e66a040b4d15ea5538af05a102aa
