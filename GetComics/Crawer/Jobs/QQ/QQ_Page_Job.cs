@@ -68,7 +68,7 @@ namespace Crawer.Jobs
                     {
                         cp.downstatus = DownChapter.待处理链接;
                         cp.modify = dt;
-                        dbcontext.Update(dt);
+                        dbcontext.Update(cp);
                         Err_ChapterJob err = new Err_ChapterJob();
                         err.bookurl = cp.chapterurl;
                         err.source = cp.source;
@@ -163,7 +163,7 @@ namespace Crawer.Jobs
                         {
                             cp.downstatus = DownChapter.待处理链接;
                             cp.modify = dt;
-                            dbcontext.Update(dt);
+                            dbcontext.Update(cp);
                             Err_ChapterJob err = new Err_ChapterJob();
                             err.bookurl = cp.chapterurl;
                             err.source = cp.source;

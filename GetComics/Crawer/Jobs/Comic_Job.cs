@@ -291,27 +291,27 @@ namespace Crawer.Jobs
 
                         }
 
-                        comiclst.Add(new Comic()
-                        {
-                            comicname = comicname,
-                            authorname = authorname,
-                            bookurl = bk.bookurl,
-                            comiccoversource = comiccover,
-                            comiccoverlocal = "",
-                            comicdesc = bookdesc,
-                            comicid = (int)Source.U17 + "_" + bk.bookurl.Split('/').LastOrDefault().Replace(".html", ""),
+                        //comiclst.Add(new Comic()
+                        //{
+                        //    comicname = comicname,
+                        //    authorname = authorname,
+                        //    bookurl = bk.bookurl,
+                        //    comiccoversource = comiccover,
+                        //    comiccoverlocal = "",
+                        //    comicdesc = bookdesc,
+                        //    comicid = (int)Source.U17 + "_" + bk.bookurl.Split('/').LastOrDefault().Replace(".html", ""),
 
-                            isfinished = isfinished,
-                            theme = theme,
-                            isvip = "0",
-                            source = Source.U17,
-                            stopcrawer = false,
-                            isoffline = false,
-                            recrawer = false,
-                            shortdate = shortdate,
-                            modify = dt,
+                        //    isfinished = isfinished,
+                        //    theme = theme,
+                        //    isvip = "0",
+                        //    source = Source.U17,
+                        //    stopcrawer = false,
+                        //    isoffline = false,
+                        //    recrawer = false,
+                        //    shortdate = shortdate,
+                        //    modify = dt,
 
-                        });
+                        //});
                     }
                     catch (Exception ex)
                     {
