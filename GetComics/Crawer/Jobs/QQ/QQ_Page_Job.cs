@@ -37,7 +37,7 @@ namespace Crawer.Jobs
             {
                 chromeOptions.AddArguments("--headless");
                 chromeOptions.AddArguments("window-size=1200x600");
-                selenium = new ChromeDriver(chromeOptions);
+                selenium = new ChromeDriver(chromeOptions);//
             }
         }
 
@@ -46,7 +46,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");         
-            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//
+            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585"
             List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
@@ -120,23 +120,42 @@ namespace Crawer.Jobs
                             selenium.SwitchTo().Frame(controlPanelFrame);
 
                             IReadOnlyCollection<IWebElement> switchtoElement = selenium.FindElements(By.Id("switcher_plogin"));
-                            if (switchtoElement != null && switchtoElement.Count > 0) {
+                            if (switchtoElement != null && switchtoElement.Count > 0)
+                            {
                                 switchtoElement.First().Click();
-                            }
-                            selenium.FindElement(By.Id("u")).Clear();
-                            selenium.FindElement(By.Id("u")).SendKeys("2806126975");
-                            selenium.FindElement(By.Id("p")).Clear();
-                            selenium.FindElement(By.Id("p")).SendKeys("rby123456");
 
-                            selenium.FindElement(By.Id("login_button")).Click();
+                                selenium.FindElement(By.Id("u")).Clear();
+                                selenium.FindElement(By.Id("u")).SendKeys("2806126975");
+                                selenium.FindElement(By.Id("p")).Clear();
+                                selenium.FindElement(By.Id("p")).SendKeys("rby123456");
+
+                                selenium.FindElement(By.Id("login_button")).Click();
+                            }
+                            selenium.SwitchTo().DefaultContent();
                         }
-                        //自动购买
-                        IReadOnlyCollection<IWebElement> checkAutoElement = selenium.FindElements(By.Id("check_auto_next"));
-                        IReadOnlyCollection<IWebElement> singlBbuyElement = selenium.FindElements(By.ClassName("single_buy"));
-                        if (checkAutoElement != null && singlBbuyElement != null&& checkAutoElement.Count>0 && singlBbuyElement.Count> 0)
+
+                        frames = selenium.FindElements(By.TagName("iframe"));
+                        IWebElement checkVipFrame = null;
+                        foreach (var frame in frames)
                         {
-                            checkAutoElement.First().Click();
-                            singlBbuyElement.First().Click();
+                            if (frame.GetAttribute("id") == "checkVipFrame")
+                            {
+                                checkVipFrame = frame;
+                                break;
+                            }
+                        }
+                        if (checkVipFrame != null)
+                        {
+                            
+                            selenium.SwitchTo().Frame(checkVipFrame);
+                            //自动购买
+                            IReadOnlyCollection<IWebElement> checkAutoElement = selenium.FindElements(By.Id("check_auto_next"));
+                            IReadOnlyCollection<IWebElement> singlBbuyElement = selenium.FindElements(By.ClassName("single_buy"));
+                            if (checkAutoElement != null && singlBbuyElement != null && checkAutoElement.Count > 0 && singlBbuyElement.Count > 0)
+                            {
+                                checkAutoElement.First().Click();
+                                singlBbuyElement.First().Click();
+                            }
                         }
                         Match match1 = rex.Match(selenium.PageSource);
                         key = match1.Groups["key1"].Value;
