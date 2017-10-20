@@ -137,14 +137,16 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");           
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Page> plst = cpq.Where(a => a.pagelocal.Length==0).Take(20).ToList();
+            List<Page> plst = cpq.Where(a =>a.pagestate==0 && a.pagesource.Length!=0 && a.pagelocal.Length==0).Take(200).ToList();
             HttpWebHelper web = new HttpWebHelper();
             foreach (var p in plst)
             {
 
                 try
                 {
-                    Stream stream = web.GetStream(p.pagesource);
+
+                  
+                    Stream stream = web.GetStream("https://cdn.dongmanmanhua.cn/15077688916232243283.jpg?x-oss-process=image/quality,q_90");
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory +"DownLoadImgs/"+ p.Id +".jpg";
@@ -163,15 +165,22 @@ namespace Crawer.Jobs
                 catch (Exception ex)
                 {
                     logger.Error(ex.Message);
-                    //Chapter chapter = cq.Where(x => x.Id == p.chapterid).FirstOrDefault();
-                    //chapter.retry = chapter.retry + 1;
-                    //chapter.modify = dt;
-                    //dbcontext.Update(chapter);
-                    dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
+                    Chapter chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
+                    chapter.retry = chapter.retry + 1;
+                    chapter.modify = dt;
+                    if (chapter.retry > 30)
                     {
-                        retry = a.retry + 1,
-                        modify = dt
-                    });
+                        p.pagestate = PageState.失败;
+                        p.modify = dt;
+                        dbcontext.Update(p);
+                    }
+                    dbcontext.Update(chapter);
+                    
+                    //dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
+                    //{
+                    //    retry = a.retry + 1,
+                    //    modify = dt
+                    //});
                     Err_PageJob err = new Err_PageJob();
                     err.imgurl = p.pagesource;
                     err.source = p.source;
@@ -206,7 +215,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Comic> cpq = dbcontext.Query<Comic>();
-            List<Comic> plst = cpq.Where(a => a.comiccoverlocal.Length == 0).TakePage(1, 20).ToList();
+            List<Comic> plst = cpq.Where(a =>a.comiccoversource.Length!=0 && a.comiccoverlocal.Length == 0).TakePage(1, 20).ToList();
             HttpWebHelper web = new HttpWebHelper();
             foreach (var p in plst)
             {
@@ -258,7 +267,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Chapter> plst = cpq.Where(a => a.chapterlocal.Length == 0).TakePage(1, 20).ToList();
+            List<Chapter> plst = cpq.Where(a =>a.chaptersource.Length!=0 &&  a.chapterlocal.Length == 0).TakePage(1, 20).ToList();
             HttpWebHelper web = new HttpWebHelper();
             foreach (var p in plst)
             {

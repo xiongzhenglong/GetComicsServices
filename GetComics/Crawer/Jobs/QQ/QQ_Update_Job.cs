@@ -14,7 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Crawer.Jobs.QQ
+namespace Crawer.Jobs
 {
     /// <summary>
     /// 更新章节
@@ -31,8 +31,7 @@ namespace Crawer.Jobs.QQ
         }
         public void Execute(IJobExecutionContext context)
         {
-            List<string> list = new List<string>();
-            list.Add("123");
+         
             
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
@@ -111,7 +110,8 @@ namespace Crawer.Jobs.QQ
                             {
                                 dbcontext.Insert(notice);
                             }
-                          
+                            comic.recrawer = false;
+                            dbcontext.Update(comic);
                             continue;
                             
                         }
@@ -142,19 +142,20 @@ namespace Crawer.Jobs.QQ
                                 {
                                     dbcontext.Insert(notice);
                                 }
-
+                                comic.recrawer = false;
+                                dbcontext.Update(comic);
                                 continue;
                             }
-
-                            if (mvadd.Count>0)
-                            {
-                                dbcontext.BulkInsert(mvadd);
-                            }
-                           
+                            
                         }
+                        if (add.Count > 0)
+                        {
+                            dbcontext.BulkInsert(add);
+                        }
+                        comic.recrawer = false;
+                        dbcontext.Update(comic);
 
-                        
-                        
+
 
 
                     }

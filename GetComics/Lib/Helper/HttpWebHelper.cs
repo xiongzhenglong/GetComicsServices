@@ -58,6 +58,8 @@ namespace Lib.Helper
             HttpWebRequest request;
             if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
             {
+                
+                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
                 ServicePointManager.ServerCertificateValidationCallback = CheckValidationResult;
                 request = WebRequest.Create(url) as HttpWebRequest;
                 request.ProtocolVersion = HttpVersion.Version10;
