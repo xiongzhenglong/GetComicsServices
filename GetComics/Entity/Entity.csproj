@@ -58,6 +58,7 @@
     <Compile Include="Err_ChapterJob.cs" />
     <Compile Include="Err_ComicJob.cs" />
     <Compile Include="Err_PageJob.cs" />
+    <Compile Include="MailMessage.cs" />
     <Compile Include="Notice.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

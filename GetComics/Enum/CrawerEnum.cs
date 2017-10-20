@@ -17,7 +17,10 @@ namespace CrawerEnum
     {
         QQ=1,
         dongmanmanhua,
-        U17
+        U17,
+        Zymk,
+        Manhuatai,
+        _163
     }
 
     public enum ErrComic

@@ -146,7 +146,7 @@ namespace Crawer.Jobs
                 {
 
                   
-                    Stream stream = web.GetStream("https://cdn.dongmanmanhua.cn/15077688916232243283.jpg?x-oss-process=image/quality,q_90");
+                    Stream stream = web.GetStream("https://easyread.nosdn.127.net/pic2017051610f0c793c8fb4beeb3539ce4dfdcd9b0.jpg?imageView&amp;thumbnail=520y728");
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory +"DownLoadImgs/"+ p.Id +".jpg";
