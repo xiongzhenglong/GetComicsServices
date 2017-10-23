@@ -37,6 +37,7 @@ namespace Crawer.Jobs
             {
                 chromeOptions.AddArguments("--headless");
                 chromeOptions.AddArguments("window-size=1200x600");
+                chromeOptions.AddArguments("start-maximized", "no-sandbox", "user-data-dir=C:/UserDataFolder");
                 selenium = new ChromeDriver(chromeOptions);//
             }
         }
@@ -46,8 +47,8 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");         
-            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585"
-            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
+            IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585" && x.downstatus == DownChapter.待处理链接
+            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.comicid == "1_622585").Take(200).ToList();
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
             {
@@ -125,9 +126,9 @@ namespace Crawer.Jobs
                                 switchtoElement.First().Click();
 
                                 selenium.FindElement(By.Id("u")).Clear();
-                                selenium.FindElement(By.Id("u")).SendKeys("2806126975");
+                                selenium.FindElement(By.Id("u")).SendKeys("3283360259");
                                 selenium.FindElement(By.Id("p")).Clear();
-                                selenium.FindElement(By.Id("p")).SendKeys("rby123456");
+                                selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
 
                                 selenium.FindElement(By.Id("login_button")).Click();
                             }
@@ -156,9 +157,17 @@ namespace Crawer.Jobs
                                 checkAutoElement.First().Click();
                                 singlBbuyElement.First().Click();
                             }
+                            selenium.SwitchTo().DefaultContent();
                         }
-                        Match match1 = rex.Match(selenium.PageSource);
-                        key = match1.Groups["key1"].Value;
+                        //Match match1 = rex.Match(selenium.PageSource);
+                        IReadOnlyCollection<IWebElement> webElement = selenium.FindElements(By.XPath("/html"));
+                        if (webElement != null && webElement.Count > 0)
+                        {
+                            Match match1 = rex.Match(webElement.First().GetAttribute("outerHTML"));
+                            key = match1.Groups["key1"].Value;
+                        }
+                        else
+                            key = string.Empty;
                         if (string.IsNullOrEmpty(key))
                         {
                             cp.downstatus = DownChapter.待处理链接;
