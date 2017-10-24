@@ -16,7 +16,11 @@ namespace CrawerEnum
     public enum Source
     {
         QQ=1,
-        dongmanmanhua
+        dongmanmanhua,
+        U17,
+        Zymk,
+        Manhuatai,
+        _163
     }
 
     public enum ErrComic
@@ -47,5 +51,11 @@ namespace CrawerEnum
         等待处理=1,
         等待发送,
         已发送
+    }
+
+    public enum PageState
+    {
+        失败=1,
+
     }
 }

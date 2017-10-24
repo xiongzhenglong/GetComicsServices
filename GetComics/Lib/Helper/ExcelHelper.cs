@@ -29,9 +29,9 @@ namespace Lib.Helper
                 return bilst;
             }
             if (!sheet.Cells[1, 1].Value.Equals("序号") ||
-                 !sheet.Cells[1, 2].Value.Equals("漫画来源") ||
-                 !sheet.Cells[1, 3].Value.Equals("漫画名称") ||
-                 !sheet.Cells[1, 4].Value.Equals("漫画地址"))
+                 !sheet.Cells[1, 2].Value.Equals("漫画") ||
+                 !sheet.Cells[1, 3].Value.Equals("地址") ||
+                 !sheet.Cells[1, 4].Value.Equals("来源"))
 
             {
                 return bilst;
@@ -56,9 +56,9 @@ namespace Lib.Helper
                 bilst.Add(new bkIm
                 {
 
-                    source = sheet.Cells[i, 2].Value == null ? "" : sheet.Cells[i, 2].Value.ToString(),
-                    name = sheet.Cells[i, 3].Value == null ? "" : sheet.Cells[i, 3].Value.ToString(),
-                    bookurl = sheet.Cells[i, 4].Value == null ? "" : sheet.Cells[i, 4].Value.ToString(),
+                    source = sheet.Cells[i, 4].Value == null ? "" : sheet.Cells[i, 4].Value.ToString(),
+                    name = sheet.Cells[i, 2].Value == null ? "" : sheet.Cells[i, 2].Value.ToString(),
+                    bookurl = sheet.Cells[i, 3].Value == null ? "" : sheet.Cells[i, 3].Value.ToString(),
 
                 });
             }

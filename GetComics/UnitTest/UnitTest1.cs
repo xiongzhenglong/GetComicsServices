@@ -10,7 +10,9 @@ namespace UnitTest
         [TestMethod]
         public void TestMethod1()
         {
-            new Exception("asdasd").WriteToFile("asdasd");
+
+
+
         }
     }
 }

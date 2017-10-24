@@ -18,6 +18,8 @@ namespace Entity
         public string shortdate { get; set; }
 
         public DateTime modify { get; set; }
+
+        public PageState pagestate { get; set; }
         #endregion
 
         #region 基本字段
