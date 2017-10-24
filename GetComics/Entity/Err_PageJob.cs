@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Entity
 {
-    public class Err_PageJob
+    public class Err_PageJob:BaseEntity
     {
         public string imgurl { get; set; }
         public Source source { get; set; }

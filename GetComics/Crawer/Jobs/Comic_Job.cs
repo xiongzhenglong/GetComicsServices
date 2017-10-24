@@ -38,12 +38,12 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             foreach (var bk in bklst)
             {
-                //var comic = cq.Where(x => x.bookurl == bk.bookurl).FirstOrDefault();
-                //if (comic != null)
-                //{
-                //    continue;
-                //}
-                if (bk.bookurl.StartsWith("1http://ac.qq.com"))
+                var comic = cq.Where(x => x.bookurl == bk.bookurl).FirstOrDefault();
+                if (comic != null)
+                {
+                    continue;
+                }
+                if (bk.bookurl.StartsWith("http://ac.qq.com"))
                 {
                     try
                     {
@@ -71,7 +71,7 @@ namespace Crawer.Jobs
                             comiccoversource = comiccover,
                             comiccoverlocal = "",
                             comicdesc = bookdesc,
-                            comicid = Source.QQ + "_" + bk.bookurl.Split('/').LastOrDefault(),
+                            comicid = (int)Source.QQ + "_" + bk.bookurl.Split('/').LastOrDefault(),
                             comicname = comicname,
                             isfinished = isfinished,
                             theme = theme,
@@ -96,7 +96,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("1https://www.dongmanmanhua.cn"))
+                else if (bk.bookurl.StartsWith("https://www.dongmanmanhua.cn"))
                 {
                     try
                     {
@@ -128,7 +128,7 @@ namespace Crawer.Jobs
                             comiccoversource = comiccover,
                             comiccoverlocal = "",
                             comicdesc = bookdesc,
-                            comicid = bk.bookurl.Split('=').LastOrDefault(),
+                            comicid =(int)Source.dongmanmanhua+"_"+ bk.bookurl.Split('=').LastOrDefault(),
                             comicname = comicname,
                             isfinished = isfinished,
                             theme = theme,
@@ -364,7 +364,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("https://manhua.163.com"))
+                else if (bk.bookurl.StartsWith("1https://manhua.163.com"))
                 {
                     try
                     {
