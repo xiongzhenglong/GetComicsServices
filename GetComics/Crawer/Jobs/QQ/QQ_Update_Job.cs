@@ -8,12 +8,9 @@ using Lib.Helper;
 using log4net;
 using Quartz;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Crawer.Jobs
 {
@@ -21,38 +18,40 @@ namespace Crawer.Jobs
     /// 更新章节
     /// </summary>
     [DisallowConcurrentExecution]
-    public  class QQ_Update_Job:IJob
+    public class QQ_Update_Job : IJob
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Update_Job));
-        MsSqlContext dbcontext;
-        static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
+        private MsSqlContext dbcontext;
+        private static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
+
         public QQ_Update_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
         }
+
         public void Execute(IJobExecutionContext context)
         {
-         
-            
             DateTime dt = DateTime.Now;
+
             string shortdate = dt.ToString("yyyy-MM-dd");
+            string updatedatetime = shortdate + " " + ((dt.Hour / 6 + 1) * 6).ToString();
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.recrawer==false).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.updatedatetime != updatedatetime).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
-                recrawer = true,
+                updatedatetime = updatedatetime,
                 modify = dt
             });
-           
+
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ && a.shortdate !=shortdate).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ && a.shortdate != shortdate).ToList();
                 List<Chapter> chapterlst = new List<Chapter>();
-                if (cplst.Count >0)
+                if (cplst.Count > 0)
                 {
                     try
                     {
@@ -71,7 +70,7 @@ namespace Crawer.Jobs
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = (int)comic.source+"_"+comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
+                                chapterid = (int)comic.source + "_" + comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
                                 chaptername = matches[i].Groups["key3"].Value.Trim(),
                                 chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
                                 sort = i + 1,
@@ -89,7 +88,6 @@ namespace Crawer.Jobs
                         int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
                         List<Chapter> add = chapterlst.Except(cplst, new Chapter_Comparer()).ToList();  // 新增
 
-                     
                         if (delete > 0)
                         {
                             List<string> idlst = cplst.Select(x => x.chapterid).ToList();
@@ -106,19 +104,16 @@ namespace Crawer.Jobs
                             notice.source = comic.source;
                             notice.shortdate = shortdate;
                             notice.modify = dt;
-                            var nqwait= nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
+                            var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
                             if (nqwait == null)
                             {
                                 dbcontext.Insert(notice);
                             }
-                            comic.recrawer = false;
-                            dbcontext.Update(comic);
+
                             continue;
-                            
                         }
                         else
                         {
-                       
                             List<Chapter> mvadd = chapterlst.Except(add, new Chapter_Comparer()).ToList();
                             string cplststr = string.Join(",", cplst.Select(x => x.chapterid).ToArray());
                             string chapterlststr = string.Join(",", mvadd.Select(x => x.chapterid).ToArray());
@@ -143,27 +138,19 @@ namespace Crawer.Jobs
                                 {
                                     dbcontext.Insert(notice);
                                 }
-                                comic.recrawer = false;
-                                dbcontext.Update(comic);
+
                                 continue;
                             }
-                            
                         }
                         if (add.Count > 0)
                         {
                             dbcontext.BulkInsert(add);
                         }
-                        comic.recrawer = false;
-                        dbcontext.Update(comic);
-
-
-
-
                     }
                     catch (Exception ex)
                     {
                         logger.Error(ex.Message);
-                        comic.shortdate = shortdate;
+                        comic.updatedatetime = "";
                         comic.modify = dt;
                         dbcontext.Update(comic);
                         Err_ChapterJob err = new Err_ChapterJob();
@@ -176,14 +163,8 @@ namespace Crawer.Jobs
                         err = dbcontext.Insert(err);
                         continue;
                     }
-
                 }
             }
-
-            
         }
-
     }
-
-  
 }

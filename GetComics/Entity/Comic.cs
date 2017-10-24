@@ -83,6 +83,8 @@ namespace Entity
         /// 是否停抓
         /// </summary>
         public bool stopcrawer { get; set; }
+
+        public string updatedatetime { get; set; }
         #endregion
 
     }

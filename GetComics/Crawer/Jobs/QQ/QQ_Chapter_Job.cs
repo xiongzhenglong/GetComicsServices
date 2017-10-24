@@ -67,7 +67,7 @@ namespace Crawer.Jobs
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = (int)comic.source +"_"+comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
                                 chaptername = matches[i].Groups["key3"].Value.Trim(),
                                 chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
                                 sort = i + 1,

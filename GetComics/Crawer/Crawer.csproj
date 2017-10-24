@@ -133,6 +133,7 @@
     <Compile Include="Jobs\QQ\QQ_Page_Job_Free.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Up_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Update_Job.cs" />
+    <Compile Include="Jobs\Temp\YueWen_Job.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

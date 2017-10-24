@@ -14,13 +14,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Crawer.Jobs.QQ
+namespace Crawer.Jobs
 {
     /// <summary>
     /// 爬取章节图片
     /// </summary>
     [DisallowConcurrentExecution]
-    public class QQ_Page_Job_Free
+    public class QQ_Page_Job_Free:IJob
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Page_Job_Free));
         MsSqlContext dbcontext;
@@ -48,6 +48,10 @@ namespace Crawer.Jobs.QQ
 
             foreach (var cp in cplst)
             {
+                if (cp.isvip == "1")
+                {
+                    continue;
+                }
                 try
                 {
                     string chapterpage = cp.chapterurl.Replace("http://ac.qq.com", "");
@@ -84,18 +88,28 @@ namespace Crawer.Jobs.QQ
                                 shortdate = shortdate,
                                 sort = i + 1,
                                 source = cp.source,
-                                pagelocal = "",
+                                pagelocal = "",                                
                                 pagesource = t.picture[i].url
                             });
                         }
 
+                        cp.isvip = "0";
+                        cp.downstatus = DownChapter.处理完链接;
+                        cp.modify = dt;
                         dbcontext.Update(cp);
                         dbcontext.BulkInsert(pglst);
+                    }
+                    else
+                    {
+                        cp.isvip = "1";
+                        cp.downstatus = DownChapter.处理完链接;
+                        cp.modify = dt;
+                        dbcontext.Update(cp);
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex.Message);
+                    
                     cp.downstatus = DownChapter.待处理链接;
                     cp.modify = dt;
                     dbcontext.Update(cp);
