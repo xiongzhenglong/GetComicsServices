@@ -3,23 +3,47 @@
   <service>Crawer</service>
   <namespace>Crawer.Jobs.{0}</namespace>
   <jobs>
+
+
     <!--漫画入库-->
-    <job name="Comic_Job">* * * * * ? </job>
+    <!--<job name="Comic_Job">* * * * * ? </job>-->
+    <!--章节状态更新-->
+    <job name="ChapterStatusUp_Job">* * * * * ? </job>
+    <!--通知状态更新-->
+    <job name="NoticeStatusUp_Job">* * * * * ? </job>
+
 
     <!--QQ章节列表-->
-    <!--<job name="QQ_Chapter_Job">0 0/1 * * * ? </job>-->
-    <!--QQ章节图片-->
-    <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
-    <!--<job name="QQ_Update_Job">* * * * * ? </job>-->
+    <job name="QQ_Chapter_Job">* * * * * ? </job>
+    <!--QQ收费章节图片-->
+    <job name="QQ_Page_Job">* * * * * ? </job>
+    <!--QQ免费章节图片-->
+    <job name="QQ_Page_Job_Free">* * * * * ? </job>
+    <!--QQ章节图片更新-->
+    <job name="QQ_Page_Up_Job">0 0/5 * * * ? </job>
+    <!--QQ章节目录更新-->
+    <job name="QQ_Update_Job">0 0/5 * * * ? </job>
+
 
     <!--dongman章节列表-->
-    <!--<job name="dongman_Chapter_Job">0 0/1 * * * ? </job>-->
+    <job name="dongman_Chapter_Job">* * * * * ? </job>
     <!--dongman章节图片-->
-    <!--<job name="dongman_Page_Job">* * * * * ? </job>-->
+    <job name="dongman_Page_Job">* * * * * ? </job>
+    <!--dongman章节图片更新-->
+    <job name="dongman_Page_Up_Job">0 0/5 * * * ? </job>
+    <!--dongman章节目录更新-->
+    <job name="dongman_Update_Job">0 0/5 * * * ? </job>
 
-    <!--<job name="DownAndUpChapter_Job">* * * * * ? </job>-->
-    <!--<job name="DownAndUpComic_Job">0 0/1 * * * ? </job>-->
-    <!--<job name="DownAndUpPage_Job">* * * * * ? </job>-->
+
+    <job name="DownAndUpChapter_Job">* * * * * ? </job>
+    <job name="DownAndUpComic_Job">* * * * * ? </job>
+    <job name="DownAndUpPage_Job">* * * * * ? </job>
+
+
+
+
+
+
 
 
 

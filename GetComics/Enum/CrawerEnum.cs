@@ -11,6 +11,8 @@ namespace CrawerEnum
         待处理链接,
         处理完链接,
         上传完图片
+
+ 
     }
 
     public enum Source

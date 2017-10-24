@@ -59,6 +59,10 @@ namespace Entity
         /// 下载重试次数
         /// </summary>
         public int retry { get; set; }
+        /// <summary>
+        /// 用于章节更新
+        /// </summary>
+        public string updatedate { get; set; }
         #endregion
     }
 }

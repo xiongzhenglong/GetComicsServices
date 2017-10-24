@@ -137,16 +137,21 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");           
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Page> plst = cpq.Where(a =>a.pagestate==0 && a.pagesource.Length!=0 && a.pagelocal.Length==0).Take(200).ToList();
+            List<Page> plst = cpq.Where(a => a.pagesource.Length!=0 && a.pagelocal.Length==0).Take(200).ToList();
             HttpWebHelper web = new HttpWebHelper();
             foreach (var p in plst)
             {
 
                 try
                 {
-
-                  
-                    Stream stream = web.GetStream("https://easyread.nosdn.127.net/pic2017051610f0c793c8fb4beeb3539ce4dfdcd9b0.jpg?imageView&amp;thumbnail=520y728");
+                    string refer = "";
+                    if (p.source == Source.dongmanmanhua)
+                    {
+                        var chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
+                        refer = chapter.chapterurl ;
+                    }
+                   
+                    Stream stream = web.GetStream(p.pagesource,300,"",null,refer, null);
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory +"DownLoadImgs/"+ p.Id +".jpg";
@@ -155,11 +160,11 @@ namespace Crawer.Jobs
                     p.pagelocal = localimg;
                     p.modify = dt;
                     dbcontext.Update(p);
-                    dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
-                    {
-                        downstatus = DownChapter.上传完图片,
-                        modify = dt
-                    });
+                    //dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
+                    //{
+                    //    downstatus = DownChapter.上传完图片,
+                    //    modify = dt
+                    //});
                     File.Delete(filePath);
                 }
                 catch (Exception ex)
@@ -222,7 +227,14 @@ namespace Crawer.Jobs
 
                 try
                 {
-                    Stream stream = web.GetStream(p.comiccoversource);
+                    string refer = "";
+                    if (p.source == Source.dongmanmanhua)
+                    {
+                        
+                        refer = p.bookurl;
+                    }
+
+                    Stream stream = web.GetStream(p.comiccoversource,300,"",null,refer,null);
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory + "DownLoadImgs/" + p.Id + ".jpg";
@@ -266,6 +278,7 @@ namespace Crawer.Jobs
             //dbcontext.Session.AddInterceptor(interceptor);
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
+            IQuery<Comic> comicq = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             List<Chapter> plst = cpq.Where(a =>a.chaptersource.Length!=0 &&  a.chapterlocal.Length == 0).TakePage(1, 20).ToList();
             HttpWebHelper web = new HttpWebHelper();
@@ -274,7 +287,14 @@ namespace Crawer.Jobs
 
                 try
                 {
-                    Stream stream = web.GetStream(p.chaptersource);
+                    string refer = "";
+                    if (p.source == Source.dongmanmanhua)
+                    {
+                        var comic = comicq.Where(x => x.comicid == p.comicid).FirstOrDefault();
+                        refer = comic.bookurl;
+                    }
+
+                    Stream stream = web.GetStream(p.chaptersource,300,"",null,refer,null);
                     Image img = Image.FromStream(stream);
                     stream.Close();
                     string filePath = AppDomain.CurrentDomain.BaseDirectory + "DownLoadImgs/" + p.Id + ".jpg";

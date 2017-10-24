@@ -120,12 +120,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JobConfig.cs" />
+    <Compile Include="Jobs\ChapterStatusUp_Job.cs" />
+    <Compile Include="Jobs\NoticeStatusUp_Job.cs" />
     <Compile Include="Jobs\Comic_Job.cs" />
     <Compile Include="Jobs\dongmanmanhua\dongman_Chapter_Job.cs" />
     <Compile Include="Jobs\dongmanmanhua\dongman_Page_Job.cs" />
+    <Compile Include="Jobs\dongmanmanhua\dongman_Page_Up_Job.cs" />
+    <Compile Include="Jobs\dongmanmanhua\dongman_Update_Job.cs" />
     <Compile Include="Jobs\DownAndUp_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Chapter_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job.cs" />
+    <Compile Include="Jobs\QQ\QQ_Page_Job_Free.cs" />
+    <Compile Include="Jobs\QQ\QQ_Page_Up_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Update_Job.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -133,6 +139,7 @@
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>

@@ -77,7 +77,7 @@ namespace Crawer.Jobs
 
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = comic.source+"_"+comic.comicid + "_" + sort,
+                                chapterid = (int)comic.source+"_"+comic.comicid + "_" + sort,
                                 chaptername = chaptername,
                                 chapterurl = "https:" + chapterurl,
                                 sort = sort,

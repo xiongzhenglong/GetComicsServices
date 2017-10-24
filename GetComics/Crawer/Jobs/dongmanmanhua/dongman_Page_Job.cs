@@ -36,7 +36,7 @@ namespace Crawer.Jobs
            
                 IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
                 List<Chapter> cplst = cpq.Where(x => x.source == Source.dongmanmanhua && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
-                logger.Error(cplst.Count+"shuliang");
+           
                 List<int> ids = cplst.Select(x => x.Id).ToList();
                 dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
                 {
