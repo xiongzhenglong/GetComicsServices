@@ -30,7 +30,8 @@ namespace Crawer.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            List<bkIm> bklst = ExcelHelper.Import(@"C:\Users\Administrator\Desktop\7家书单抓取.xlsx").ToList();
+            //List<bkIm> bklst = ExcelHelper.Import(@"C:\Users\Administrator\Desktop\7家书单抓取.xlsx").ToList();
+            List<bkIm> bklst = ExcelHelper.Import2(@"C:\Users\Administrator\Desktop\漫画抓取信息.xlsx").ToList();
             List<Comic> comiclst = new List<Comic>();
             IQuery<Comic> cq = dbcontext.Query<Comic>();
 
