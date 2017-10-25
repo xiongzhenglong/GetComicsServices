@@ -37,7 +37,7 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585"
-            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接).Take(200).ToList();
+            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip=="0" ).Take(200).ToList();
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
             {
@@ -48,10 +48,7 @@ namespace Crawer.Jobs
 
             foreach (var cp in cplst)
             {
-                if (cp.isvip == "1")
-                {
-                    continue;
-                }
+               
                 try
                 {
                     string chapterpage = cp.chapterurl.Replace("http://ac.qq.com", "");
@@ -102,7 +99,7 @@ namespace Crawer.Jobs
                     else
                     {
                         cp.isvip = "1";
-                        cp.downstatus = DownChapter.处理完链接;
+                        cp.downstatus = DownChapter.待处理链接;
                         cp.modify = dt;
                         dbcontext.Update(cp);
                     }

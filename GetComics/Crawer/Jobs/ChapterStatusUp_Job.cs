@@ -40,7 +40,7 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Chapter> cqlst = cq.Where(x => x.downstatus != DownChapter.待处理链接).Take(500).ToList();
+            List<Chapter> cqlst = cq.Where(x =>x.source==Source.QQ &&  x.downstatus != DownChapter.待处理链接).Take(500).ToList();
             foreach (var c in cqlst)
             {
                 List<Page> pagelst = cpq.Where(x => x.chapterid == c.chapterid).ToList();
