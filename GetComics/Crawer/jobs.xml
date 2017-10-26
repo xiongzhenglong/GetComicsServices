@@ -23,7 +23,7 @@
     <!--QQ章节目录更新-->
     <!--<job name="QQ_Chapter_Job">* * * * * ? </job>-->
 
-    <job name="QQ_Page_Job">* * * * * ? </job>
+    <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
     
     <!--<job name="QQ_Page_Job_Free">* * * * * ? </job>-->
 
@@ -50,7 +50,7 @@
     <job name="DownAndUpPage_Job">* * * * * ? </job>-->
     
     
-    <!--<job name="YueWen_Job">* * * * * ? </job>-->
+    <job name="YueWen_Job">* * * * * ? </job>
 
 
 
