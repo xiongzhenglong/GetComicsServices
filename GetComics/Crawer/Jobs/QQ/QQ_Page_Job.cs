@@ -181,29 +181,21 @@ namespace Crawer.Jobs
                         }
                         Match match1 = rex.Match(selenium.PageSource);
                         string key = match1.Groups["key1"].Value;
-                        if (string.IsNullOrEmpty(key))
+                        if (string.IsNullOrEmpty(key)|| errMsg != string.Empty)
                         {
-                            if (string.IsNullOrEmpty(key))
-                            {
-                                cp.downstatus = DownChapter.待处理链接;
-                                cp.modify = dt;
-                                dbcontext.Update(cp);
-                                dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
-                                {
-                                    downstatus = DownChapter.待处理链接,
-                                    modify = dt
-                                });
+                            cp.downstatus = DownChapter.待处理链接;
+                            cp.modify = dt;
+                            dbcontext.Update(cp);
 
-                                Err_ChapterJob err = new Err_ChapterJob();
-                                err.bookurl = cp.chapterurl;
-                                err.source = cp.source;
-                                err.errtype = ErrChapter.解析出错;
-                                err.modify = dt;
-                                err.shortdate = shortdate;
-                                err.message = errMsg.Length > 0 ? errMsg : "DATA解析失败";
-                                err = dbcontext.Insert(err);
-                                continue;
-                            }
+                            Err_ChapterJob err = new Err_ChapterJob();
+                            err.bookurl = cp.chapterurl;
+                            err.source = cp.source;
+                            err.errtype = ErrChapter.解析出错;
+                            err.modify = dt;
+                            err.shortdate = shortdate;
+                            err.message = errMsg != string.Empty ? errMsg : "DATA解析失败";
+                            err = dbcontext.Insert(err);
+                            continue;
                         }
 
                         string s = DecodeHelper.QQPageDecode(key.Substring(1));
@@ -236,6 +228,7 @@ namespace Crawer.Jobs
                         cp.downstatus = DownChapter.待处理链接;
                         cp.modify = dt;
                         dbcontext.Update(cp);
+
                         Err_ChapterJob err = new Err_ChapterJob();
                         err.bookurl = cp.chapterurl;
                         err.source = cp.source;
