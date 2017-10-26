@@ -40,15 +40,26 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Chapter> cqlst = cq.Where(x =>x.source==Source.QQ &&  x.downstatus != DownChapter.待处理链接).Take(500).ToList();
+            List<Chapter> cqlst = cq.Where(x =>x.source==Source.QQ &&  x.downstatus == DownChapter.处理完链接).Take(500).ToList();
+            List<string> cidlst = cqlst.Select(x => x.chapterid).ToList();
+            List<Page> pagelst = cpq.Where(x => x.source == Source.QQ && cidlst.Contains(x.chapterid)).ToList();
+            List<int> waitidlst = new List<int>();
             foreach (var c in cqlst)
-            {
-                List<Page> pagelst = cpq.Where(x => x.chapterid == c.chapterid).ToList();
-                List<Page> pagenulllst = pagelst.Where(x => x.pagelocal == "").ToList();
-                c.downstatus = pagenulllst.Count > 0 ? DownChapter.处理完链接 : DownChapter.上传完图片;
-                c.modify = dt;
-                dbcontext.Update(c);
+            {             
+                List<Page> pagenulllst = pagelst.Where(x =>x.chapterid==c.chapterid &&  x.pagelocal == "").ToList();
+                if (pagenulllst.Count==0)
+                {
+                    waitidlst.Add(c.Id);
+                }
+                //c.downstatus = pagenulllst.Count > 0 ? DownChapter.处理完链接 : DownChapter.上传完图片;
+                //c.modify = dt;
+                //dbcontext.Update(c);
             }
+            dbcontext.Update<Chapter>(a => waitidlst.Contains(a.Id), a => new Chapter()
+            {
+                downstatus = DownChapter.上传完图片,
+                modify = dt
+            });
         }
     }
 }

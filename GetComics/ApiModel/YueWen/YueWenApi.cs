@@ -46,7 +46,10 @@ namespace ApiModel.YueWen
     
       
         public string title { get; set; }
-    
+
+        public string maxfreechapter { get; set; }
+
+
     }
 
    

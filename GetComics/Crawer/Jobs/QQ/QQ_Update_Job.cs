@@ -39,7 +39,7 @@ namespace Crawer.Jobs
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.updatedatetime != updatedatetime).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.QQ &&(a.updatedatetime ==null || a.updatedatetime != updatedatetime)).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -70,7 +70,7 @@ namespace Crawer.Jobs
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = (int)comic.source + "_" + comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
                                 chaptername = matches[i].Groups["key3"].Value.Trim(),
                                 chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
                                 sort = i + 1,

@@ -8,17 +8,19 @@ namespace Entity
 {
     public class YueWen : BaseEntity
     {
+        
+        public string authorname { get; set; }
         public string bookid { get; set; }
         public string bookname { get; set; }
-        public string authorname { get; set; }
+        public string merchantname { get; set; }
         public string channelname { get; set; }
-        public string hetongid { get; set; }
-        public string hetongname { get; set; }
-        public string remark { get; set; }
-
-        /// <summary>
-        /// 0 未完成 1 完成
-        /// </summary>
+        public string agreedid { get; set; }
+        public string agreedment { get; set; }
         public string status { get; set; }
+        public string maxfreecount { get; set; }
+
+        public string bid { get; set; }
+
+       
     }
 }

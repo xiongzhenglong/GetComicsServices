@@ -170,10 +170,10 @@ namespace Lib.Helper
                     bookid = sheet.Cells[i, 1].Value == null ? "" : sheet.Cells[i, 1].Value.ToString(),
                     bookname = sheet.Cells[i, 2].Value == null ? "" : sheet.Cells[i, 2].Value.ToString(),
                     authorname = sheet.Cells[i, 3].Value == null ? "" : sheet.Cells[i, 3].Value.ToString(),
-                    channelname = sheet.Cells[i, 4].Value == null ? "" : sheet.Cells[i, 4].Value.ToString(),
-                    合同id = sheet.Cells[i, 5].Value == null ? "" : sheet.Cells[i, 5].Value.ToString(),
-                    合同名称 = sheet.Cells[i, 6].Value == null ? "" : sheet.Cells[i, 6].Value.ToString(),
-                    备注信息 = sheet.Cells[i, 7].Value == null ? "" : sheet.Cells[i, 7].Value.ToString()
+                    merchantname = sheet.Cells[i, 4].Value == null ? "" : sheet.Cells[i, 4].Value.ToString(),
+                    channelname = sheet.Cells[i, 5].Value == null ? "" : sheet.Cells[i, 5].Value.ToString(),
+                    agreedid  = sheet.Cells[i, 6].Value == null ? "" : sheet.Cells[i, 6].Value.ToString(),
+                    agreedment = sheet.Cells[i, 7].Value == null ? "" : sheet.Cells[i, 7].Value.ToString()                
          
 
                 });
@@ -186,26 +186,26 @@ namespace Lib.Helper
             return bilst;
         }
 
-        public static void ToExcel(ICollection<YueWenIm> cmlst)
-        {
-            FileInfo file = new FileInfo(@"C:\Users\Administrator\Desktop\阅文版权商下-未上架追书图书-2017-10-19 - 副本.xlsx");
-            ExcelPackage package = new ExcelPackage(file);
+        //public static void ToExcel(ICollection<YueWenIm> cmlst)
+        //{
+        //    FileInfo file = new FileInfo(@"C:\Users\Administrator\Desktop\阅文版权商下-未上架追书图书-2017-10-19 - 副本.xlsx");
+        //    ExcelPackage package = new ExcelPackage(file);
            
-            ExcelWorksheet sheet = package.Workbook.Worksheets[1];
+        //    ExcelWorksheet sheet = package.Workbook.Worksheets[1];
 
-            #region write header
+        //    #region write header
 
-            #endregion write header
+        //    #endregion write header
 
-            int pos = 2;
-            foreach (YueWenIm cm in cmlst)
-            {               
-                sheet.Cells[pos, 7].Value = cm.备注信息;   
-                pos++;
-            }
+        //    int pos = 2;
+        //    foreach (YueWenIm cm in cmlst)
+        //    {               
+        //        sheet.Cells[pos, 7].Value = cm.备注信息;   
+        //        pos++;
+        //    }
 
-            package.Save();
-        }
+        //    package.Save();
+        //}
 
     }
 }
