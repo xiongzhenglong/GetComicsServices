@@ -192,6 +192,19 @@ namespace Framework.Common.Extension
             return ConfigurationManager.AppSettings[inputStr];
         }
 
+        /// <summary>
+        /// 自定义配置参数
+        /// </summary>
+        /// <param name="inputStr"></param>
+        /// <returns></returns>
+        public static string SetAppSettingValue(this string key, string value)
+        {
+            string str =  ConfigurationManager.AppSettings[key];
+            if (str != null)
+                ConfigurationManager.AppSettings[key] = value;
+            return str;
+        }
+
         #endregion
 
         #region 字符格式化
