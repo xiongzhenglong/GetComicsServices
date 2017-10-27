@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Crawer.Jobs
@@ -30,18 +31,26 @@ namespace Crawer.Jobs
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
         static IWebDriver selenium;
         static ChromeOptions chromeOptions;
+        static bool isHasMoney = true;
         public QQ_Page_Job()
         {
-            dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
+            try {
+                dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
 
-            if (selenium == null)
-            {
-                Process[] pList = Process.GetProcessesByName("chromedriver");
-                foreach (var p in pList)
+                if (selenium == null)
                 {
-                    p.Kill();
+                    Process[] pList = Process.GetProcessesByName("chromedriver");
+                    foreach (var p in pList)
+                    {
+                        p.Kill();
+                    }
+                    InitChromeDriver();
                 }
-                InitChromeDriver();
+            }
+            catch(Exception e)
+            {
+                logger.Info("QQ_page vip init err:"+e.Message +"line:"+e.StackTrace);
+                throw e;
             }
         }
         private static void InitChromeDriver()
@@ -67,8 +76,9 @@ namespace Crawer.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            string isStart = "IsStartBuyQQ".ValueOfAppSetting();
-            if (isStart != null && isStart.Equals("1"))
+            //logger.Info("QQ_page vip begin");
+            //string isStart = "IsStartBuyQQ".ValueOfAppSetting();
+            //if (isStart != null && isStart.Equals("1"))
             {
                 DateTime dt = DateTime.Now;
                 string shortdate = dt.ToString("yyyy-MM-dd");
@@ -115,6 +125,11 @@ namespace Crawer.Jobs
                                     selenium.FindElement(By.Id("p")).Clear();
                                     selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
 
+                                    //selenium.FindElement(By.Id("u")).Clear();
+                                    //selenium.FindElement(By.Id("u")).SendKeys("3337049653");
+                                    //selenium.FindElement(By.Id("p")).Clear();
+                                    //selenium.FindElement(By.Id("p")).SendKeys("eryuetian1");
+
                                     selenium.FindElement(By.Id("login_button")).Click();
                                 }
                                 selenium.SwitchTo().DefaultContent();
@@ -154,19 +169,25 @@ namespace Crawer.Jobs
                                             downstatus = DownChapter.待处理链接,
                                             modify = dt
                                         });
-                                        //关闭购买，等待修改配置
-                                        "IsStartBuyQQ".SetAppSettingValue("0");
-
-                                        Err_ChapterJob err = new Err_ChapterJob();
-                                        err.bookurl = cp.chapterurl;
-                                        err.source = cp.source;
-                                        err.errtype = ErrChapter.解析出错;
-                                        err.modify = dt;
-                                        err.shortdate = shortdate;
-                                        err.message = "点券不足，请去充值！";
-                                        err = dbcontext.Insert(err);
+                                        ////关闭购买，等待修改配置
+                                        //"IsStartBuyQQ".SetAppSettingValue("0");
+                                        if (isHasMoney)
+                                        {
+                                            Err_ChapterJob err = new Err_ChapterJob();
+                                            err.bookurl = cp.chapterurl;
+                                            err.source = cp.source;
+                                            err.errtype = ErrChapter.解析出错;
+                                            err.modify = dt;
+                                            err.shortdate = shortdate;
+                                            err.message = "点券不足，请去充值！";
+                                            err = dbcontext.Insert(err);
+                                        }
+                                        isHasMoney = false;
+                                        Thread.Sleep(3600000);
                                         break;
                                     }
+                                    else
+                                        isHasMoney = true;
 
                                     checkAutoElement.First().Click();
                                     singlBbuyElement.First().Click();
@@ -220,6 +241,8 @@ namespace Crawer.Jobs
                         dbcontext.Update(cp);
                         dbcontext.BulkInsert(pglst);
                         ids.Remove(cp.Id);
+
+                        logger.Info("QQ_page vip buy sucess:id=" + cp.Id);
                     }
                     catch (Exception ex)
                     {
