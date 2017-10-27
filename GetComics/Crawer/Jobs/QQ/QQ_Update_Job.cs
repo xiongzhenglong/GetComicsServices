@@ -38,8 +38,10 @@ namespace Crawer.Jobs
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
+            IQuery<PageHis> phisq = dbcontext.Query<PageHis>();
+            IQuery<Page> pq = dbcontext.Query<Page>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.updatedatetime != updatedatetime).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.QQ &&(a.updatedatetime ==null || a.updatedatetime != updatedatetime)).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -70,7 +72,7 @@ namespace Crawer.Jobs
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = (int)comic.source + "_" + comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
                                 chaptername = matches[i].Groups["key3"].Value.Trim(),
                                 chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
                                 sort = i + 1,
@@ -91,6 +93,34 @@ namespace Crawer.Jobs
                         if (delete > 0)
                         {
                             List<string> idlst = cplst.Select(x => x.chapterid).ToList();
+                            int phislstcount = phisq.Where(x => idlst.Contains(x.chapterid)).Count();
+                            if (phislstcount == 0)
+                            {
+                                List<Page> pglst = pq.Where(x => idlst.Contains(x.chapterid)).ToList();
+                                if (pglst.Count>0)
+                                {
+                                    List<PageHis> phislst = new List<PageHis>();
+                                    pglst.ForEach(x =>
+                                    {
+                                        phislst.Add(new PageHis()
+                                        {
+                                            chapterid = x.chapterid,
+                                            modify = x.modify,
+                                            pagelocal = x.pagelocal,
+                                            pagesource = x.pagesource,
+                                            pagestate = x.pagestate,
+                                            shortdate = x.shortdate,
+                                            sort = x.sort,
+                                            source = x.source
+                                        });
+                                    });
+                                    dbcontext.BulkInsert(phislst);
+                                }
+                                
+                                
+                            }
+                           
+
                             dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
                             dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
                             if (chapterlst.Count > 0)
@@ -120,6 +150,33 @@ namespace Crawer.Jobs
                             if (cplststr != chapterlststr) // 调序
                             {
                                 List<string> idlst = cplst.Select(x => x.chapterid).ToList();
+                                int phislstcount = phisq.Where(x => idlst.Contains(x.chapterid)).Count();
+                                if (phislstcount == 0)
+                                {
+                                    List<Page> pglst = pq.Where(x => idlst.Contains(x.chapterid)).ToList();
+                                    if (pglst.Count > 0)
+                                    {
+                                        List<PageHis> phislst = new List<PageHis>();
+                                        pglst.ForEach(x =>
+                                        {
+                                            phislst.Add(new PageHis()
+                                            {
+                                                chapterid = x.chapterid,
+                                                modify = x.modify,
+                                                pagelocal = x.pagelocal,
+                                                pagesource = x.pagesource,
+                                                pagestate = x.pagestate,
+                                                shortdate = x.shortdate,
+                                                sort = x.sort,
+                                                source = x.source
+                                            });
+                                        });
+                                        dbcontext.BulkInsert(phislst);
+                                    }
+
+
+                                }
+
                                 dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
                                 dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
                                 if (chapterlst.Count > 0)

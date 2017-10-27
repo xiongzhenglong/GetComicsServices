@@ -83,7 +83,7 @@ namespace Crawer.Jobs
                 DateTime dt = DateTime.Now;
                 string shortdate = dt.ToString("yyyy-MM-dd");
                 string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
-                IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585"
+                IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_524356"
                 List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip.Equals("1")).Take(200).ToList();
                 List<int> ids = cplst.Select(x => x.Id).ToList();
                 dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
@@ -98,6 +98,7 @@ namespace Crawer.Jobs
                 {
                     try
                     {
+                        
                         errMsg = string.Empty;
                         selenium.Navigate().GoToUrl(cp.chapterurl);
                         IList<IWebElement> frames = selenium.FindElements(By.TagName("iframe"));

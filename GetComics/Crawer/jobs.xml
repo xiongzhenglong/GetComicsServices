@@ -10,9 +10,9 @@
     <!--通知状态更新-->
     <!--<job name="Comic_Job">* * * * * ? </job>-->
 
-    <!--<job name="ChapterStatusUp_Job">* * * * * ? </job>
-  
-    <job name="NoticeStatusUp_Job">* * * * * ? </job>-->
+    <!--<job name="ChapterStatusUp_Job">* * * * * ? </job>-->
+
+    <!--<job name="NoticeStatusUp_Job">* * * * * ? </job>-->
 
 
 
@@ -23,8 +23,8 @@
     <!--QQ章节目录更新-->
     <!--<job name="QQ_Chapter_Job">* * * * * ? </job>-->
 
-    <job name="QQ_Page_Job">* * * * * ? </job>
-    
+    <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
+
     <!--<job name="QQ_Page_Job_Free">* * * * * ? </job>-->
 
     <!--<job name="QQ_Page_Up_Job">0 0/5 * * * ? </job>-->
@@ -47,10 +47,10 @@
 
     <!--<job name="DownAndUpChapter_Job">* * * * * ? </job>
     <job name="DownAndUpComic_Job">* * * * * ? </job>
-    <job name="DownAndUpPage_Job">* * * * * ? </job>
-    
-    
-    <job name="YueWen_Job">* * * * * ? </job>-->
+    <job name="DownAndUpPage_Job">* * * * * ? </job>-->
+
+
+    <job name="YueWen_Job">* * * * * ? </job>
 
 
 
