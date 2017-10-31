@@ -89,7 +89,7 @@ namespace Crawer.Jobs
                 List<int> ids = cplst.Select(x => x.Id).ToList();
                 dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
                 {
-                    downstatus = DownChapter.处理完链接,
+                    downstatus = DownChapter.处理中,
                     modify = dt
                 });
                 List<Chapter> chapterlst = new List<Chapter>();
@@ -252,6 +252,22 @@ namespace Crawer.Jobs
 
                             string s = DecodeHelper.QQPageDecode(key.Substring(1));
                             var t = JsonHelper.DeserializeJsonToObject<QQ_Page_Api>(s);
+                            if (t.picture.Count < 1)
+                            {
+                                cp.downstatus = DownChapter.待处理链接;
+                                cp.modify = dt;
+                                dbcontext.Update(cp);
+
+                                Err_ChapterJob err = new Err_ChapterJob();
+                                err.bookurl = cp.chapterurl;
+                                err.source = cp.source;
+                                err.errtype = ErrChapter.解析出错;
+                                err.modify = dt;
+                                err.shortdate = shortdate;
+                                err.message = "访问付费章节内容时只存在一张图片";
+                                err = dbcontext.Insert(err);
+                                continue;
+                            }
                             List<Page> pglst = new List<Page>();
                             for (int i = 0; i < t.picture.Count; i++)
                             {
