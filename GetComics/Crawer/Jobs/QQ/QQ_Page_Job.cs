@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Crawer.Jobs
@@ -30,18 +31,26 @@ namespace Crawer.Jobs
         static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
         static IWebDriver selenium;
         static ChromeOptions chromeOptions;
+        static bool isHasMoney = true;
         public QQ_Page_Job()
         {
-            dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
+            try {
+                dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
 
-            if (selenium == null)
-            {
-                Process[] pList = Process.GetProcessesByName("chromedriver");
-                foreach (var p in pList)
+                if (selenium == null)
                 {
-                    p.Kill();
+                    Process[] pList = Process.GetProcessesByName("chromedriver");
+                    foreach (var p in pList)
+                    {
+                        p.Kill();
+                    }
+                    InitChromeDriver();
                 }
-                InitChromeDriver();
+            }
+            catch(Exception e)
+            {
+                logger.Info("QQ_page vip init err:"+e.Message +"line:"+e.StackTrace);
+                throw e;
             }
         }
         private static void InitChromeDriver()
@@ -67,13 +76,15 @@ namespace Crawer.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            string isStart = "IsStartBuyQQ".ValueOfAppSetting();
-            if (isStart != null && isStart.Equals("1"))
+            //logger.Info("QQ_page vip begin");
+            //string isStart = "IsStartBuyQQ".ValueOfAppSetting();
+            //if (isStart != null && isStart.Equals("1"))
             {
                 DateTime dt = DateTime.Now;
                 string shortdate = dt.ToString("yyyy-MM-dd");
                 string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
-                IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_524356"
+                IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_524356" 
+                IQuery<PageHis> phisq = dbcontext.Query<PageHis>();
                 List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip.Equals("1")).Take(200).ToList();
                 List<int> ids = cplst.Select(x => x.Id).ToList();
                 dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
@@ -88,139 +99,182 @@ namespace Crawer.Jobs
                 {
                     try
                     {
-                        
-                        errMsg = string.Empty;
-                        selenium.Navigate().GoToUrl(cp.chapterurl);
-                        IList<IWebElement> frames = selenium.FindElements(By.TagName("iframe"));
-                        IWebElement controlPanelFrame = null;
-                        foreach (var frame in frames)
+                        IQuery<PageHis> cpHis = phisq.Where(x => x.chapterid == cp.chapterid);
+                        if(cpHis != null && cpHis.Count() > 0)
                         {
-                            if (frame.GetAttribute("id") == "iframeAll")
+                            List<PageHis> cpHisList = cpHis.ToList();
+                       
+                            List<Page> pglst = new List<Page>();
+                            foreach (var page in cpHisList)
                             {
-                                controlPanelFrame = frame;
-                                break;
-                            }
-                        }
-                        if (controlPanelFrame != null && controlPanelFrame.Displayed == true) //QQ登录 
-                        {
-                            try
-                            {
-                                selenium.SwitchTo().Frame(controlPanelFrame);
-                                IReadOnlyCollection<IWebElement> switchtoElement = selenium.FindElements(By.Id("switcher_plogin"));
-                                if (switchtoElement != null && switchtoElement.Count > 0 && switchtoElement.First().Displayed == true)
+                                pglst.Add(new Page()
                                 {
-                                    switchtoElement.First().Click();
-
-                                    selenium.FindElement(By.Id("u")).Clear();
-                                    selenium.FindElement(By.Id("u")).SendKeys("3283360259");
-                                    selenium.FindElement(By.Id("p")).Clear();
-                                    selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
-
-                                    selenium.FindElement(By.Id("login_button")).Click();
-                                }
-                                selenium.SwitchTo().DefaultContent();
+                                    chapterid = page.chapterid,
+                                    modify = dt,
+                                    shortdate = shortdate,
+                                    sort = page.sort,
+                                    source = page.source,
+                                    pagelocal = "",
+                                    pagesource = page.pagesource
+                                });
                             }
-                            catch (Exception ex)
-                            {
-                                errMsg = "QQ 登录失败：" + ex.Message;
-                                logger.Error(errMsg);
-                            }
-                        }
 
-                        frames = selenium.FindElements(By.TagName("iframe"));
-                        IWebElement checkVipFrame = null;
-                        foreach (var frame in frames)
-                        {
-                            if (frame.GetAttribute("id") == "checkVipFrame")
-                            {
-                                checkVipFrame = frame;
-                                break;
-                            }
-                        }
-                        if (checkVipFrame != null && checkVipFrame.Displayed == true)
-                        {
-                            try
-                            {
-                                //自动购买
-                                selenium.SwitchTo().Frame(checkVipFrame);
-                                IReadOnlyCollection<IWebElement> checkAutoElement = selenium.FindElements(By.Id("check_auto_next"));
-                                IReadOnlyCollection<IWebElement> singlBbuyElement = selenium.FindElements(By.ClassName("single_buy"));
-                                if (checkAutoElement != null && singlBbuyElement != null && checkAutoElement.Count > 0 && singlBbuyElement.Count > 0 && checkAutoElement.First().Displayed == true)
-                                {
-                                    if (singlBbuyElement.First().Text.IndexOf("点券不足") > -1)
-                                    {
-                                        //列表中未成功购买的数据还原成待处理
-                                        dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
-                                        {
-                                            downstatus = DownChapter.待处理链接,
-                                            modify = dt
-                                        });
-                                        //关闭购买，等待修改配置
-                                        "IsStartBuyQQ".SetAppSettingValue("0");
-
-                                        Err_ChapterJob err = new Err_ChapterJob();
-                                        err.bookurl = cp.chapterurl;
-                                        err.source = cp.source;
-                                        err.errtype = ErrChapter.解析出错;
-                                        err.modify = dt;
-                                        err.shortdate = shortdate;
-                                        err.message = "点券不足，请去充值！";
-                                        err = dbcontext.Insert(err);
-                                        break;
-                                    }
-
-                                    checkAutoElement.First().Click();
-                                    singlBbuyElement.First().Click();
-                                }
-                                selenium.SwitchTo().DefaultContent();
-                            }
-                            catch (Exception ex)
-                            {
-                                errMsg = "自动购买失败：" + ex.Message;
-                                logger.Error(errMsg);
-                            }
-                        }
-                        Match match1 = rex.Match(selenium.PageSource);
-                        string key = match1.Groups["key1"].Value;
-                        if (string.IsNullOrEmpty(key)|| errMsg != string.Empty)
-                        {
-                            cp.downstatus = DownChapter.待处理链接;
+                            cp.downstatus = DownChapter.处理完链接;
                             cp.modify = dt;
                             dbcontext.Update(cp);
-
-                            Err_ChapterJob err = new Err_ChapterJob();
-                            err.bookurl = cp.chapterurl;
-                            err.source = cp.source;
-                            err.errtype = ErrChapter.解析出错;
-                            err.modify = dt;
-                            err.shortdate = shortdate;
-                            err.message = errMsg != string.Empty ? errMsg : "DATA解析失败";
-                            err = dbcontext.Insert(err);
-                            continue;
+                            dbcontext.BulkInsert(pglst);
+                            logger.Info("QQ_page vip syn history sucess:id=" + cp.Id);
                         }
-
-                        string s = DecodeHelper.QQPageDecode(key.Substring(1));
-                        var t = JsonHelper.DeserializeJsonToObject<QQ_Page_Api>(s);
-                        List<Page> pglst = new List<Page>();
-                        for (int i = 0; i < t.picture.Count; i++)
+                        else
                         {
-                            pglst.Add(new Page()
-                            {
-                                chapterid = cp.chapterid,
-                                modify = dt,
-                                shortdate = shortdate,
-                                sort = i + 1,
-                                source = cp.source,
-                                pagelocal = "",
-                                pagesource = t.picture[i].url
-                            });
-                        }
 
-                        cp.downstatus = DownChapter.处理完链接;
-                        cp.modify = dt;
-                        dbcontext.Update(cp);
-                        dbcontext.BulkInsert(pglst);
-                        ids.Remove(cp.Id);
+                            errMsg = string.Empty;
+                            selenium.Navigate().GoToUrl(cp.chapterurl);
+                            IList<IWebElement> frames = selenium.FindElements(By.TagName("iframe"));
+                            IWebElement controlPanelFrame = null;
+                            foreach (var frame in frames)
+                            {
+                                if (frame.GetAttribute("id") == "iframeAll")
+                                {
+                                    controlPanelFrame = frame;
+                                    break;
+                                }
+                            }
+                            if (controlPanelFrame != null && controlPanelFrame.Displayed == true) //QQ登录 
+                            {
+                                try
+                                {
+                                    selenium.SwitchTo().Frame(controlPanelFrame);
+                                    IReadOnlyCollection<IWebElement> switchtoElement = selenium.FindElements(By.Id("switcher_plogin"));
+
+                                    if (switchtoElement != null && switchtoElement.Count > 0 && switchtoElement.First().Displayed == true)
+                                    {
+                                        switchtoElement.First().Click();
+
+                                        selenium.FindElement(By.Id("u")).Clear();
+                                        selenium.FindElement(By.Id("u")).SendKeys("3283360259");
+                                        selenium.FindElement(By.Id("p")).Clear();
+                                        selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
+
+                                        //selenium.FindElement(By.Id("u")).Clear();
+                                        //selenium.FindElement(By.Id("u")).SendKeys("3337049653");
+                                        //selenium.FindElement(By.Id("p")).Clear();
+                                        //selenium.FindElement(By.Id("p")).SendKeys("eryuetian1");
+
+                                        selenium.FindElement(By.Id("login_button")).Click();
+                                    }
+                                    selenium.SwitchTo().DefaultContent();
+                                }
+                                catch (Exception ex)
+                                {
+                                    errMsg = "QQ 登录失败：" + ex.Message;
+                                    logger.Error(errMsg);
+                                }
+                            }
+
+                            frames = selenium.FindElements(By.TagName("iframe"));
+                            IWebElement checkVipFrame = null;
+                            foreach (var frame in frames)
+                            {
+                                if (frame.GetAttribute("id") == "checkVipFrame")
+                                {
+                                    checkVipFrame = frame;
+                                    break;
+                                }
+                            }
+                            if (checkVipFrame != null && checkVipFrame.Displayed == true)
+                            {
+                                try
+                                {
+                                    //自动购买
+                                    selenium.SwitchTo().Frame(checkVipFrame);
+                                    IReadOnlyCollection<IWebElement> checkAutoElement = selenium.FindElements(By.Id("check_auto_next"));
+                                    IReadOnlyCollection<IWebElement> singlBbuyElement = selenium.FindElements(By.ClassName("single_buy"));
+                                    if (checkAutoElement != null && singlBbuyElement != null && checkAutoElement.Count > 0 && singlBbuyElement.Count > 0 && checkAutoElement.First().Displayed == true)
+                                    {
+                                        if (singlBbuyElement.First().Text.IndexOf("点券不足") > -1)
+                                        {
+                                            //列表中未成功购买的数据还原成待处理
+                                            dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
+                                            {
+                                                downstatus = DownChapter.待处理链接,
+                                                modify = dt
+                                            });
+                                            ////关闭购买，等待修改配置
+                                            //"IsStartBuyQQ".SetAppSettingValue("0");
+                                            if (isHasMoney)
+                                            {
+                                                Err_ChapterJob err = new Err_ChapterJob();
+                                                err.bookurl = cp.chapterurl;
+                                                err.source = cp.source;
+                                                err.errtype = ErrChapter.解析出错;
+                                                err.modify = dt;
+                                                err.shortdate = shortdate;
+                                                err.message = "点券不足，请去充值！";
+                                                err = dbcontext.Insert(err);
+                                            }
+                                            isHasMoney = false;
+                                            Thread.Sleep(3600000);
+                                            break;
+                                        }
+                                        else
+                                            isHasMoney = true;
+
+                                        checkAutoElement.First().Click();
+                                        singlBbuyElement.First().Click();
+                                    }
+                                    selenium.SwitchTo().DefaultContent();
+                                }
+                                catch (Exception ex)
+                                {
+                                    errMsg = "自动购买失败：" + ex.Message;
+                                    logger.Error(errMsg);
+                                }
+                            }
+                            Match match1 = rex.Match(selenium.PageSource);
+                            string key = match1.Groups["key1"].Value;
+                            if (string.IsNullOrEmpty(key) || errMsg != string.Empty)
+                            {
+                                cp.downstatus = DownChapter.待处理链接;
+                                cp.modify = dt;
+                                dbcontext.Update(cp);
+
+                                Err_ChapterJob err = new Err_ChapterJob();
+                                err.bookurl = cp.chapterurl;
+                                err.source = cp.source;
+                                err.errtype = ErrChapter.解析出错;
+                                err.modify = dt;
+                                err.shortdate = shortdate;
+                                err.message = errMsg != string.Empty ? errMsg : "DATA解析失败";
+                                err = dbcontext.Insert(err);
+                                continue;
+                            }
+
+                            string s = DecodeHelper.QQPageDecode(key.Substring(1));
+                            var t = JsonHelper.DeserializeJsonToObject<QQ_Page_Api>(s);
+                            List<Page> pglst = new List<Page>();
+                            for (int i = 0; i < t.picture.Count; i++)
+                            {
+                                pglst.Add(new Page()
+                                {
+                                    chapterid = cp.chapterid,
+                                    modify = dt,
+                                    shortdate = shortdate,
+                                    sort = i + 1,
+                                    source = cp.source,
+                                    pagelocal = "",
+                                    pagesource = t.picture[i].url
+                                });
+                            }
+
+                            cp.downstatus = DownChapter.处理完链接;
+                            cp.modify = dt;
+                            dbcontext.Update(cp);
+                            dbcontext.BulkInsert(pglst);
+                            ids.Remove(cp.Id);
+
+                            logger.Info("QQ_page vip buy sucess:id=" + cp.Id);
+                        }
                     }
                     catch (Exception ex)
                     {
