@@ -25,7 +25,7 @@
 
     <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
 
-    <!--<job name="QQ_Page_Job_Free">* * * * * ? </job>-->
+    <job name="QQ_Page_Job_Free">* * * * * ? </job>
 
     <!--<job name="QQ_Page_Up_Job">0 0/5 * * * ? </job>-->
 
@@ -50,7 +50,7 @@
     <job name="DownAndUpPage_Job">* * * * * ? </job>-->
 
 
-    <job name="YueWen_Job">* * * * * ? </job>
+    <!--<job name="YueWen_Job">* * * * * ? </job>-->
 
 
 
