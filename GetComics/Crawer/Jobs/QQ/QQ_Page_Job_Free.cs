@@ -31,8 +31,7 @@ namespace Crawer.Jobs
         }
 
         public void Execute(IJobExecutionContext context)
-        {
-
+        {            
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
