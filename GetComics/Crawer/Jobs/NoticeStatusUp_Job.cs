@@ -20,10 +20,13 @@ using System.Threading.Tasks;
 
 namespace Crawer.Jobs
 {
+    [DisallowConcurrentExecution]
     public class NoticeStatusUp_Job : IJob
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(NoticeStatusUp_Job));
         MsSqlContext dbcontext;
+        private static int pageIndex = 1;
+        private static int pageSize = 100;
      
         public NoticeStatusUp_Job()
         {
@@ -37,7 +40,11 @@ namespace Crawer.Jobs
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             IQuery<Comic> cq = dbcontext.Query<Comic>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Notice> nqlst = nq.Where(x =>x.noticestatus == NoticeStatus.等待处理).Take(500).ToList();
+            List<Notice> nqlst = nq.Where(x =>x.noticestatus == NoticeStatus.等待处理).OrderBy(x => x.Id).Skip((pageIndex-1) * pageSize).Take(pageSize).ToList();//Select(x => x).
+            if (nqlst.Count < pageSize)
+                pageIndex = 1;
+            else
+                pageIndex++; 
             foreach (var n in nqlst)
             {
                 if (n.noticetype== NoticeType.目录变更)
