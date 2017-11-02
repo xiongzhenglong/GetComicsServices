@@ -271,16 +271,30 @@ namespace Crawer.Jobs
                             List<Page> pglst = new List<Page>();
                             for (int i = 0; i < t.picture.Count; i++)
                             {
-                                pglst.Add(new Page()
+                                if (pglst.Exists(x => x.pagesource == t.picture[i].url) == false)
                                 {
-                                    chapterid = cp.chapterid,
-                                    modify = dt,
-                                    shortdate = shortdate,
-                                    sort = i + 1,
-                                    source = cp.source,
-                                    pagelocal = "",
-                                    pagesource = t.picture[i].url
-                                });
+                                    pglst.Add(new Page()
+                                    {
+                                        chapterid = cp.chapterid,
+                                        modify = DateTime.Now,
+                                        shortdate = shortdate,
+                                        sort = i + 1,
+                                        source = cp.source,
+                                        pagelocal = "",
+                                        pagesource = t.picture[i].url
+                                    });
+                                }
+                                else
+                                {
+                                    Err_ChapterJob err = new Err_ChapterJob();
+                                    err.bookurl = cp.chapterurl;
+                                    err.source = cp.source;
+                                    err.errtype = ErrChapter.解析出错;
+                                    err.modify = DateTime.Now;
+                                    err.shortdate = shortdate;
+                                    err.message = "存在重复图片";
+                                    err = dbcontext.Insert(err);
+                                }
                             }
 
                             cp.downstatus = DownChapter.处理完链接;
