@@ -63,6 +63,11 @@ namespace Entity
         /// 用于章节更新
         /// </summary>
         public string updatedate { get; set; }
+
+        /// <summary>
+        /// 判断是否多开
+        /// </summary>
+        public string ticks { get; set; }
         #endregion
     }
 }

@@ -32,7 +32,7 @@ namespace Crawer.Jobs
         public void Execute(IJobExecutionContext context)
         {
             DateTime dt = DateTime.Now;
-
+            string ticks = dt.Ticks.ToString();
             string shortdate = dt.ToString("yyyy-MM-dd");
             string updatedatetime = shortdate + " " + ((dt.Hour / 6 + 1) * 6).ToString();
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
@@ -45,13 +45,14 @@ namespace Crawer.Jobs
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
+                
                 updatedatetime = updatedatetime,
                 modify = dt
             });
 
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ && a.shortdate != shortdate).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ ).ToList();
                 List<Chapter> chapterlst = new List<Chapter>();
                 if (cplst.Count > 0)
                 {
@@ -85,6 +86,7 @@ namespace Crawer.Jobs
                                 chapterlocal = "",
                                 modify = dt,
                                 shortdate = shortdate,
+                                ticks = ticks
                             });
                         }
                         int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
@@ -111,7 +113,8 @@ namespace Crawer.Jobs
                                             pagestate = x.pagestate,
                                             shortdate = x.shortdate,
                                             sort = x.sort,
-                                            source = x.source
+                                            source = x.source,
+                                            ticks = x.ticks
                                         });
                                     });
                                     dbcontext.BulkInsert(phislst);
@@ -168,7 +171,8 @@ namespace Crawer.Jobs
                                                 pagestate = x.pagestate,
                                                 shortdate = x.shortdate,
                                                 sort = x.sort,
-                                                source = x.source
+                                                source = x.source,
+                                                ticks = x.ticks
                                             });
                                         });
                                         dbcontext.BulkInsert(phislst);

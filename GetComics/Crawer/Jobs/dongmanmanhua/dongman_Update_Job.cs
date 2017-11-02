@@ -39,7 +39,7 @@ namespace Crawer.Jobs
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.recrawer == false).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && a.recrawer == false).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {

@@ -20,6 +20,11 @@ namespace Entity
         public DateTime modify { get; set; }
 
         public PageState pagestate { get; set; }
+
+        /// <summary>
+        /// 判断是否多开
+        /// </summary>
+        public string  ticks { get; set; }
         #endregion
 
         #region 基本字段

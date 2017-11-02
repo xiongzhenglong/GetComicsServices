@@ -25,7 +25,7 @@
 
     <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
 
-    <job name="QQ_Page_Job_Free">* * * * * ? </job>
+    <!--<job name="QQ_Page_Job_Free">* * * * * ? </job>-->
 
     <!--<job name="QQ_Page_Up_Job">0 0/5 * * * ? </job>-->
 
@@ -36,21 +36,32 @@
     <!--dongman章节图片-->
     <!--dongman章节图片更新-->
     <!--dongman章节目录更新-->
-    <!--<job name="dongman_Chapter_Job">* * * * * ? </job>
+    <!--<job name="dongman_Chapter_Job">* * * * * ? </job>-->
 
-    <job name="dongman_Page_Job">* * * * * ? </job>
+    <!--<job name="dongman_Page_Job">* * * * * ? </job>-->
     
-    <job name="dongman_Page_Up_Job">0 0/5 * * * ? </job>
+    <!--<job name="dongman_Page_Up_Job">0 0/5 * * * ? </job>-->
 
-    <job name="dongman_Update_Job">0 0/5 * * * ? </job>-->
+    <!--<job name="dongman_Update_Job">0 0/5 * * * ? </job>-->
 
+    <!--<job name="Zymk_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="Zymk_Page_Job">* * * * * ? </job>-->
+
+    <!--<job name="Manhuatai_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="Manhuatai_Page_Job">* * * * * ? </job>-->
+
+    <!--<job name="_163_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="_163_Page_Job">* * * * * ? </job>-->
+
+    <!--<job name="U17_Chapter_Job">* * * * * ? </job>-->
+    <job name="U17_Page_Job">* * * * * ? </job>
 
     <!--<job name="DownAndUpChapter_Job">* * * * * ? </job>
-    <job name="DownAndUpComic_Job">* * * * * ? </job>
-    <job name="DownAndUpPage_Job">* * * * * ? </job>-->
+    <job name="DownAndUpComic_Job">* * * * * ? </job>-->
+    <!--<job name="DownAndUpPage_Job">* * * * * ? </job>-->
 
 
-    <!--<job name="YueWen_Job">* * * * * ? </job>-->
+
 
 
 

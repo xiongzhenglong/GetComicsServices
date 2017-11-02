@@ -39,12 +39,16 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             foreach (var bk in bklst)
             {
+                if (!bk.bookurl.StartsWith("https://manhua.163.com"))
+                {
+                    continue;
+                }
                 var comic = cq.Where(x => x.bookurl == bk.bookurl).FirstOrDefault();
                 if (comic != null)
                 {
                     continue;
                 }
-                if (bk.bookurl.StartsWith("!http://ac.qq.com"))
+                if (bk.bookurl.StartsWith("http://ac.qq.com"))
                 {
                     try
                     {
@@ -155,7 +159,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("1http://www.u17.com"))
+                else if (bk.bookurl.StartsWith("http://www.u17.com"))
                 {
                     try
                     {
@@ -234,7 +238,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("1http://www.zymk.cn"))
+                else if (bk.bookurl.StartsWith("http://www.zymk.cn"))
                 {
                     try
                     {
@@ -299,7 +303,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("1http://www.manhuatai.com"))
+                else if (bk.bookurl.StartsWith("http://www.manhuatai.com"))
                 {
                     try
                     {
@@ -365,7 +369,7 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
-                else if (bk.bookurl.StartsWith("1https://manhua.163.com"))
+                else if (bk.bookurl.StartsWith("https://manhua.163.com"))
                 {
                     try
                     {
@@ -403,12 +407,12 @@ namespace Crawer.Jobs
                             comiccoversource = comiccover,
                             comiccoverlocal = "",
                             comicdesc = bookdesc,
-                            comicid = (int)Source.Manhuatai + "_" + bk.bookurl.Split('/')[3],
+                            comicid = (int)Source._163 + "_" + bk.bookurl.Split('/')[4],
 
                             isfinished = isfinished,
                             theme = theme,
                             isvip = "0",
-                            source = Source.Manhuatai,
+                            source = Source._163,
                             stopcrawer = false,
                             isoffline = false,
                             recrawer = false,

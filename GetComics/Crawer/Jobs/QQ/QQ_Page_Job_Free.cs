@@ -33,13 +33,16 @@ namespace Crawer.Jobs
         public void Execute(IJobExecutionContext context)
         {            
             DateTime dt = DateTime.Now;
+            string ticks = dt.Ticks.ToString();
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_622585"
-            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip=="0" ).Take(200).ToList();
+            List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip == "0").Take(200).ToList();
+            
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
             {
+                ticks = ticks,
                 downstatus = DownChapter.处理完链接,
                 modify = dt
             });
@@ -59,6 +62,7 @@ namespace Crawer.Jobs
                     {
                         cp.downstatus = DownChapter.待处理链接;
                         cp.modify = dt;
+                        cp.ticks = ticks;
                         dbcontext.Update(cp);
                         Err_ChapterJob err = new Err_ChapterJob();
                         err.bookurl = cp.chapterurl;
@@ -84,12 +88,14 @@ namespace Crawer.Jobs
                                 shortdate = shortdate,
                                 sort = i + 1,
                                 source = cp.source,
-                                pagelocal = "",                                
+                                pagelocal = "",   
+                                ticks = ticks,                             
                                 pagesource = t.picture[i].url
                             });
                         }
-
+                    
                         cp.isvip = "0";
+                        cp.ticks = ticks;
                         cp.downstatus = DownChapter.处理完链接;
                         cp.modify = dt;
                         dbcontext.Update(cp);
@@ -98,6 +104,7 @@ namespace Crawer.Jobs
                     else
                     {
                         cp.isvip = "1";
+                        cp.ticks = ticks;
                         cp.downstatus = DownChapter.待处理链接;
                         cp.modify = dt;
                         dbcontext.Update(cp);
@@ -108,6 +115,7 @@ namespace Crawer.Jobs
                     
                     cp.downstatus = DownChapter.待处理链接;
                     cp.modify = dt;
+                    cp.ticks = ticks;
                     dbcontext.Update(cp);
                     Err_ChapterJob err = new Err_ChapterJob();
                     err.bookurl = cp.chapterurl;

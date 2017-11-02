@@ -15,16 +15,13 @@ using System.Threading.Tasks;
 
 namespace Crawer.Jobs
 {
-    /// <summary>
-    /// 爬取章节列表
-    /// </summary>
     [DisallowConcurrentExecution]
-    public class QQ_Chapter_Job: IJob
+    public class U17_Chapter_Job:IJob
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Chapter_Job));
-        MsSqlContext dbcontext;
-        static HttpHelper _helper = new HttpHelper("http://ac.qq.com");
-        public QQ_Chapter_Job()
+        private static readonly ILog logger = LogManager.GetLogger(typeof(U17_Chapter_Job));
+        MsSqlContext dbcontext;     
+        static HttpHelper _helper = new HttpHelper("http://www.u17.com");
+        public U17_Chapter_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
 
@@ -38,47 +35,41 @@ namespace Crawer.Jobs
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.QQ && a.shortdate == shortdate).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.U17 && a.shortdate == shortdate).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
-            dbcontext.Update<Comic>(a =>ids.Contains(a.Id), a => new Comic()
+            dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
-                shortdate= yesterday,
+                shortdate = yesterday,
                 modify = dt
             });
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ).ToList();
-                if (cplst.Count==0)
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.U17).ToList();
+                if (cplst.Count == 0)
                 {
                     try
                     {
-                        string bookurl = comic.bookurl.Replace("http://ac.qq.com/", "");
+                        string bookurl = comic.bookurl.Replace("http://www.u17.com/", "");
                         var bookdata = _helper.Get(null, bookurl);
-
-                        //class=\"chapter-page-all works-(?<key1>.*?)-list\"
-                        Regex reg1 = new Regex("<ol class=\"chapter-page-all works-chapter-list\">(?<key1>.*?)</ol>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                        Match match1 = reg1.Match(bookdata);
-                        string htmlSource = match1.Groups["key1"].Value;
-
-                        string pattern = "<a target=\"_blank\" title=\"(?<key1>.*?)\" href=\"(?<key2>.*?)\">(?<key3>.*?)</a>";
-                        MatchCollection matches = Regex.Matches(htmlSource, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
+                        bookdata = StringHelper.MergeSpace(bookdata);
+                        string pattern = "<li id='cpt_read_(?<key1>.*?)'> <a id=\"cpt_(?<key2>.*?)\" href=\"(?<key3>.*?)\" title=(?<key5>.*?)>(?<key4>.*?)</a>";                     
+                        MatchCollection matches = Regex.Matches(bookdata, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                         for (int i = 0; i < matches.Count; i++)
                         {
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value.Split('/').LastOrDefault(),
-                                chaptername = matches[i].Groups["key3"].Value.Trim(),
-                                chapterurl = "http://ac.qq.com" + matches[i].Groups["key2"].Value,
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value,
+                                chaptername = StringHelper.ReplaceHtmlTag(matches[i].Groups["key4"].Value.Trim()),
+                                chapterurl = matches[i].Groups["key3"].Value,
                                 sort = i + 1,
                                 comicid = comic.comicid,
                                 retry = 0,
                                 source = comic.source,
                                 downstatus = DownChapter.待处理链接,
-                                isvip = "0",
+                                isvip = matches[i].Groups["key5"].Value.IndexOf("pay_chapter") == -1? "0":"1",
                                 chaptersource = "",
-                                chapterlocal="",
+                                chapterlocal = "",
                                 modify = dt,
                                 shortdate = shortdate,
                                 ticks = ticks
@@ -101,7 +92,7 @@ namespace Crawer.Jobs
                         err = dbcontext.Insert(err);
                         continue;
                     }
-                    
+
                 }
             }
 

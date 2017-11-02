@@ -57,6 +57,7 @@
     <Compile Include="Helper\HttpHelper.cs" />
     <Compile Include="Helper\HttpWebHelper.cs" />
     <Compile Include="Helper\JsonHelper.cs" />
+    <Compile Include="Helper\StringHelper.cs" />
     <Compile Include="Helper\UcHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
