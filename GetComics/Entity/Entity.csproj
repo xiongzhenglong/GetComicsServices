@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="BaseEntity.cs" />
     <Compile Include="Chapter.cs" />
+    <Compile Include="VIPFreeComic.cs" />
     <Compile Include="Comic.cs" />
     <Compile Include="Err_ChapterJob.cs" />
     <Compile Include="Err_ComicJob.cs" />

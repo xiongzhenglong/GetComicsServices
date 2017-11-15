@@ -49,10 +49,10 @@ namespace Crawer.Jobs
 
                     string chapterpage = cp.chapterurl.Replace("https://manhua.163.com/", "");
                     var imgdata = _helper.Get(null, chapterpage);
-                    Regex rex1 = new Regex("payType: \"(?<key1>.*?)\",");
+                    Regex rex1 = new Regex("imageId:");
                     var match1 = rex1.Match(imgdata);
 
-                    if (match1.Groups["key1"].Value == "0")
+                    if (match1.Value.Trim()!="")
                     {
                         Regex rex2 = new Regex("url: window.IS_SUPPORT_WEBP (?<key1>.*?),");
                         var match2 = rex2.Matches(imgdata);

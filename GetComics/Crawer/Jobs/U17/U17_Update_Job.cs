@@ -8,25 +8,20 @@ using Lib.Helper;
 using log4net;
 using Quartz;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Crawer.Jobs
 {
-    /// <summary>
-    /// 更新章节目录
-    /// </summary>
     [DisallowConcurrentExecution]
-    public class dongman_Update_Job: IJob
+    public class U17_Update_Job : IJob
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(dongman_Update_Job));
-        MsSqlContext dbcontext;
-        static HttpHelper _helper = new HttpHelper("https://www.dongmanmanhua.cn");
-        public dongman_Update_Job()
+        private static readonly ILog logger = LogManager.GetLogger(typeof(U17_Update_Job));
+        private MsSqlContext dbcontext;       
+        static HttpHelper _helper = new HttpHelper("http://www.u17.com");
+
+        public U17_Update_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
         }
@@ -43,7 +38,7 @@ namespace Crawer.Jobs
             IQuery<PageHis> phisq = dbcontext.Query<PageHis>();
             IQuery<Page> pq = dbcontext.Query<Page>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && (a.updatedatetime == null || a.updatedatetime != updatedatetime)).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.U17 && (a.updatedatetime == null || a.updatedatetime != updatedatetime)).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -54,104 +49,72 @@ namespace Crawer.Jobs
 
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.dongmanmanhua).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.U17).ToList();
                 List<Chapter> chapterlst = new List<Chapter>();
                 if (cplst.Count > 0)
                 {
                     try
                     {
-                        string bookurl = comic.bookurl.Replace("https://www.dongmanmanhua.cn/", "");
+                        string bookurl = comic.bookurl.Replace("http://www.u17.com/", "");
                         var bookdata = _helper.Get(null, bookurl);
-                        string pattern = "<li id=\"episode_(?<key1>.*?)\" data-episode-no=\"(?<key2>.*?)\">(?<key3>.*?)</li>";
+                        bookdata = StringHelper.MergeSpace(bookdata);
+                        string pattern = "<li id='cpt_read_(?<key1>.*?)'> <a id=\"cpt_(?<key2>.*?)\" href=\"(?<key3>.*?)\" title=(?<key5>.*?)>(?<key4>.*?)</a>";
                         MatchCollection matches = Regex.Matches(bookdata, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-                        int pagecount = (int)Math.Ceiling(int.Parse(matches[0].Groups[1].Value) / 10.0);
                         for (int i = 0; i < matches.Count; i++)
                         {
-                            var lihtml = matches[i].Groups["key3"].Value;
-                            Regex reg1 = new Regex("href=\"(?<key1>.*?)\"");
-                            Match match1 = reg1.Match(lihtml);
-                            string chapterurl = match1.Groups["key1"].Value;
-                            Regex reg2 = new Regex("<span class=\"tx\">#(?<key1>.*?)</span>");
-                            Match match2 = reg2.Match(lihtml);
-                            int sort = int.Parse(match2.Groups["key1"].Value);
-                            Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
-                            Match match3 = reg3.Match(lihtml);
-                            string chaptername = match3.Groups["key1"].Value;
-
-                            Regex reg4 = new Regex("src=\"(?<key1>.*?)\"");
-                            Match match4 = reg4.Match(lihtml);
-                            string chaptersource = match4.Groups["key1"].Value;
-
                             chapterlst.Add(new Chapter()
                             {
-                                chapterid = comic.comicid + "_" + sort,
-                                chaptername = chaptername,
-                                chapterurl = "https:" + chapterurl,
-                                sort = sort,
-
+                                chapterid = comic.comicid + "_" + matches[i].Groups["key2"].Value,
+                                chaptername = StringHelper.ReplaceHtmlTag(matches[i].Groups["key4"].Value.Trim()),
+                                chapterurl = matches[i].Groups["key3"].Value,
+                                sort = i + 1,
                                 comicid = comic.comicid,
                                 retry = 0,
                                 source = comic.source,
                                 downstatus = DownChapter.待处理链接,
-                                isvip = "0",
-                                chaptersource = chaptersource,
+                                isvip = matches[i].Groups["key5"].Value.IndexOf("_chapter") == -1 ? "0" : "1",
+                                chaptersource = "",
                                 chapterlocal = "",
                                 modify = dt,
                                 shortdate = shortdate,
+                                ticks = ticks
                             });
                         }
-
-                        for (int i = 2; i <= pagecount; i++)
-                        {
-                            var bookdata2 = _helper.Get(null, bookurl + "&page=" + i);
-                            string pattern2 = "<li id=\"episode_(?<key1>.*?)\" data-episode-no=\"(?<key2>.*?)\">(?<key3>.*?)</li>";
-                            MatchCollection matches2 = Regex.Matches(bookdata2, pattern2, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-                            for (int j = 0; j < matches2.Count; j++)
-                            {
-                                var lihtml = matches2[j].Groups["key3"].Value;
-                                Regex reg1 = new Regex("href=\"(?<key1>.*?)\"");
-                                Match match1 = reg1.Match(lihtml);
-                                string chapterurl = match1.Groups["key1"].Value;
-                                Regex reg2 = new Regex("<span class=\"tx\">#(?<key1>.*?)</span>");
-                                Match match2 = reg2.Match(lihtml);
-                                int sort = int.Parse(match2.Groups["key1"].Value);
-                                Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
-                                Match match3 = reg3.Match(lihtml);
-                                string chaptername = match3.Groups["key1"].Value;
-
-                                Regex reg4 = new Regex("src=\"(?<key1>.*?)\"");
-                                Match match4 = reg4.Match(lihtml);
-                                string chaptersource = match4.Groups["key1"].Value;
-
-                                chapterlst.Add(new Chapter()
-                                {
-                                    chapterid = comic.comicid + "_" + sort,
-                                    chaptername = chaptername,
-                                    chapterurl = "https:" + chapterurl,
-                                    sort = sort,
-
-                                    comicid = comic.comicid,
-                                    retry = 0,
-                                    source = comic.source,
-                                    downstatus = DownChapter.待处理链接,
-                                    isvip = "0",
-                                    chaptersource = chaptersource,
-                                    chapterlocal = "",
-                                    modify = dt,
-                                    shortdate = shortdate,
-                                });
-                            }
-                        }
-
                         int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
                         List<Chapter> add = chapterlst.Except(cplst, new Chapter_Comparer()).ToList();  // 新增
 
                         if (delete > 0)
                         {
                             List<string> idlst = cplst.Select(x => x.chapterid).ToList();
-                           
+                            int phislstcount = phisq.Where(x => idlst.Contains(x.chapterid)).Count();
+                            if (phislstcount == 0)
+                            {
+                                List<Page> pglst = pq.Where(x => idlst.Contains(x.chapterid)).ToList();
+                                if (pglst.Count > 0)
+                                {
+                                    List<PageHis> phislst = new List<PageHis>();
+                                    pglst.ForEach(x =>
+                                    {
+                                        phislst.Add(new PageHis()
+                                        {
+                                            chapterid = x.chapterid,
+                                            modify = x.modify,
+                                            pagelocal = x.pagelocal,
+                                            pagesource = x.pagesource,
+                                            pagestate = x.pagestate,
+                                            shortdate = x.shortdate,
+                                            sort = x.sort,
+                                            source = x.source,
+                                            ticks = x.ticks
+                                        });
+                                    });
+                                    dbcontext.BulkInsert(phislst);
+                                }
+
+
+                            }
+
+
                             dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
                             dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
                             if (chapterlst.Count > 0)
@@ -181,7 +144,34 @@ namespace Crawer.Jobs
                             if (cplststr != chapterlststr) // 调序
                             {
                                 List<string> idlst = cplst.Select(x => x.chapterid).ToList();
-                               
+                                int phislstcount = phisq.Where(x => idlst.Contains(x.chapterid)).Count();
+                                if (phislstcount == 0)
+                                {
+                                    List<Page> pglst = pq.Where(x => idlst.Contains(x.chapterid)).ToList();
+                                    if (pglst.Count > 0)
+                                    {
+                                        List<PageHis> phislst = new List<PageHis>();
+                                        pglst.ForEach(x =>
+                                        {
+                                            phislst.Add(new PageHis()
+                                            {
+                                                chapterid = x.chapterid,
+                                                modify = x.modify,
+                                                pagelocal = x.pagelocal,
+                                                pagesource = x.pagesource,
+                                                pagestate = x.pagestate,
+                                                shortdate = x.shortdate,
+                                                sort = x.sort,
+                                                source = x.source,
+                                                ticks = x.ticks
+                                            });
+                                        });
+                                        dbcontext.BulkInsert(phislst);
+                                    }
+
+
+                                }
+
                                 dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
                                 dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
                                 if (chapterlst.Count > 0)

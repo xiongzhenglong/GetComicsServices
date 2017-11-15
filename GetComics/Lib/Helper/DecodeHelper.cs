@@ -147,5 +147,26 @@ namespace Lib.Helper
             }
             return a;
         }
+
+        /// <summary>
+        /// Base64解密
+        /// </summary>
+        /// <param name="codeName">解密采用的编码方式，注意和加密时采用的方式一致</param>
+        /// <param name="result">待解密的密文</param>
+        /// <returns>解密后的字符串</returns>
+        public static string DecodeBase64(Encoding encode, string result)
+        {
+            string decode = "";
+            byte[] bytes = Convert.FromBase64String(result);
+            try
+            {
+                decode = encode.GetString(bytes);
+            }
+            catch
+            {
+                decode = result;
+            }
+            return decode;
+        }
     }
 }

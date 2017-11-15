@@ -10,6 +10,7 @@ using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Crawer.Jobs
@@ -30,8 +31,19 @@ namespace Crawer.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            List<bkIm> bklst = ExcelHelper.Import(@"C:\Users\Administrator\Desktop\7家书单抓取.xlsx").ToList();
+            //List<bkIm> bklst = ExcelHelper.Import(@"C:\Users\Administrator\Desktop\7家书单抓取.xlsx").ToList();
             //List<bkIm> bklst = ExcelHelper.Import2(@"C:\Users\Administrator\Desktop\漫画抓取信息.xlsx").ToList();
+            List<bkIm> bklst = new List<bkIm>();
+            IQuery<VIPFreeComic> vfcq = dbcontext.Query<VIPFreeComic>();
+            List<VIPFreeComic> vfclst = vfcq.Where(x => true).ToList();
+            vfclst.ForEach(x =>
+            {
+                bklst.Add(new bkIm()
+                {
+                    bookurl = x.bookurl
+                });
+            });
+
             List<Comic> comiclst = new List<Comic>();
             IQuery<Comic> cq = dbcontext.Query<Comic>();
 
@@ -39,7 +51,7 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             foreach (var bk in bklst)
             {
-                if (!bk.bookurl.StartsWith("https://manhua.163.com"))
+                if (!bk.bookurl.StartsWith("http://ac.qq.com"))
                 {
                     continue;
                 }
@@ -133,7 +145,7 @@ namespace Crawer.Jobs
                             comiccoversource = comiccover,
                             comiccoverlocal = "",
                             comicdesc = bookdesc,
-                            comicid =(int)Source.dongmanmanhua+"_"+ bk.bookurl.Split('=').LastOrDefault(),
+                            comicid = (int)Source.dongmanmanhua + "_" + bk.bookurl.Split('=').LastOrDefault(),
                             comicname = comicname,
                             isfinished = isfinished,
                             theme = theme,
@@ -174,9 +186,9 @@ namespace Crawer.Jobs
                         Regex reg2 = new Regex("cover_url = \"(?<key1>.*?)\"");
                         Match match2 = reg2.Match(bookdata);
                         string comiccover = match2.Groups["key1"].Value;
-                        Regex reg3 = new Regex("id=\"words\">(?<key1>.*?)<a");
+                        Regex reg3 = new Regex("id=\"words\">(?<key1>.*?)</p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                         Match match3 = reg3.Match(bookdata);
-                        string bookdesc = match3.Groups["key1"].Value;
+                        string bookdesc = match3.Groups["key1"].Value.Trim();
                         Regex reg4 = new Regex("状态：(?<key1>.*?)<span(?<key2>.*?)>(?<key3>.*?)</span>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                         Match match4 = reg4.Match(bookdata);
                         string isfinished = match4.Groups["key3"].Value.Trim();
@@ -433,9 +445,82 @@ namespace Crawer.Jobs
                         continue;
                     }
                 }
+                else if (bk.bookurl.StartsWith("http://www.mh160.com"))
+                {
+                    try
+                    {
+                        HttpWebHelper _helper = new HttpWebHelper();
+
+                        var bookdata = _helper.Get(bk.bookurl, Encoding.GetEncoding("gb2312"));
+                        Regex reg1 = new Regex("<meta property=\"og:novel:book_name\" content=\"(?<key1>.*?)\">");
+                        Match match1 = reg1.Match(bookdata);
+                        string comicname = match1.Groups["key1"].Value;
+
+                        Regex reg2 = new Regex("<meta property=\"og:novel:author\" content=\"(?<key1>.*?)\">");
+                        Match match2 = reg2.Match(bookdata);
+                        string authorname = match2.Groups["key1"].Value;
+
+                        Regex reg3 = new Regex("<meta property=\"og:image\" content=\"(?<key1>.*?)\">");
+                        Match match3 = reg3.Match(bookdata);
+                        string comiccover = match3.Groups["key1"].Value;
+
+                        Regex reg4 = new Regex("<div class=\"introduction\" id=\"intro1\"><p>(?<key1>.*?)</p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                        Match match4 = reg4.Match(bookdata);
+                        string bookdesc = match4.Groups["key1"].Value.Trim();
+
+                        Regex reg5 = new Regex("<meta property=\"og:novel:status\" content=\"(?<key1>.*?)\">");
+                        Match match5 = reg5.Match(bookdata);
+
+                        string isfinished = match5.Groups["key1"].Value == "连载中" ? "连载中" : "已完结";
+
+                        string theme = "";
+                        Regex reg6 = new Regex("<meta property=\"og:novel:category\" content=\"(?<key1>.*?)\">");
+                        Match match6 = reg6.Match(bookdata);
+                        theme = string.Join(",", match6.Groups["key1"].Value.Trim().Split(' '));
+
+                        comiclst.Add(new Comic()
+                        {
+                            comicname = comicname,
+                            authorname = authorname,
+                            bookurl = bk.bookurl,
+                            comiccoversource = comiccover,
+                            comiccoverlocal = "",
+                            comicdesc = bookdesc,
+                            comicid = (int)Source.mh160 + "_" + bk.bookurl.Split('/')[4],
+                            isfinished = isfinished,
+                            theme = theme,
+
+                            isvip = "0",
+                            source = Source.mh160,
+                            stopcrawer = false,
+                            isoffline = false,
+                            recrawer = false,
+                            shortdate = shortdate,
+                            modify = dt,
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex.Message);
+                        Err_ComicJob err = new Err_ComicJob();
+                        err.bookurl = bk.bookurl;
+                        err.errtype = ErrComic.解析出错;
+                        err.modify = dt;
+                        err.shortdate = shortdate;
+                        err.message = ex.Message;
+                        err = dbcontext.Insert(err);
+                        continue;
+                    }
+                }
             }
             if (comiclst.Count > 0)
             {
+                //foreach (var item in comiclst)
+                //{
+                //    var comic = cq.Where(x => x.bookurl == item.bookurl).FirstOrDefault();
+                //    comic.comicdesc = item.comicdesc;
+                //    dbcontext.Update(comic);
+                //}
                 dbcontext.BulkInsert(comiclst);
             }
         }

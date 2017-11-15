@@ -28,7 +28,8 @@ namespace Crawer.Jobs
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(ChapterStatusUp_Job));
         MsSqlContext dbcontext;
-     
+        private static int pageIndex = 1;
+        private static int pageSize = 500;
         public ChapterStatusUp_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
@@ -40,7 +41,11 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Chapter> cqlst = cq.Where(x => x.downstatus == DownChapter.处理完链接).Take(500).ToList();
+            List<Chapter> cqlst = cq.Where(x => x.downstatus == DownChapter.处理完链接).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+            if (cqlst.Count < pageSize)
+                pageIndex = 1;
+            else
+                pageIndex++;
             List<string> cidlst = cqlst.Select(x => x.chapterid).ToList();
             List<Page> pagelst = cpq.Where(x =>  cidlst.Contains(x.chapterid)).ToList();
             List<int> waitidlst = new List<int>();

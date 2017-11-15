@@ -35,7 +35,8 @@ namespace Crawer.Jobs
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.U17 && a.shortdate == shortdate).Take(200).ToList();
+            //List<Comic> comiclst = q.Where(a => a.source == Source.U17 && a.shortdate == shortdate).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.U17).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -67,7 +68,7 @@ namespace Crawer.Jobs
                                 retry = 0,
                                 source = comic.source,
                                 downstatus = DownChapter.待处理链接,
-                                isvip = matches[i].Groups["key5"].Value.IndexOf("pay_chapter") == -1? "0":"1",
+                                isvip = matches[i].Groups["key5"].Value.IndexOf("_chapter") == -1? "0":"1",
                                 chaptersource = "",
                                 chapterlocal = "",
                                 modify = dt,

@@ -152,14 +152,14 @@ namespace Crawer.Api
             try
             {
                 List<BookChapter> bookChapters = new List<BookChapter>();
-                List<Chapter> chapterList = cq.Where(x => x.source == (Source)source && x.comicid == bookId).ToList();
+                List<Chapter> chapterList = cq.Where(x => x.source == (Source)source && x.comicid == bookId).OrderBy(x=>x.sort).ToList();
                 var cplst2 = chapterList.Where(x => x.downstatus != DownChapter.上传完图片).OrderBy(x => x.sort).FirstOrDefault();
                 if (cplst2 != null)
                 {
                     chapterList = chapterList.Where(x => x.sort < cplst2.sort).ToList();
                 }
                 List<string> chapterids = chapterList.Select(x => x.chapterid).ToList();
-                List<Page> pglst = pq.Where(x => x.source == (Source)source && chapterids.Contains(x.chapterid)).ToList();
+               
                 chapterList.ForEach(x =>
                 {
                     bookChapters.Add(new BookChapter()
@@ -170,7 +170,7 @@ namespace Crawer.Api
                         chapterorder = x.sort,
                         vip = 0,
                        
-                        volumename ="正文",
+                        volumename ="",
                        
 
                     });
@@ -213,7 +213,7 @@ namespace Crawer.Api
             {
                 Chapter chapter = cq.Where(x => x.source == (Source)source && x.chapterid == chapterId).FirstOrDefault();
                 List<BookChapterInfo> chapterScenes = new List<BookChapterInfo>();
-                List<Page> pglst = pq.Where(x => x.source == (Source)source && x.chapterid == chapter.chapterid && x.pagelocal != "").ToList();
+                List<Page> pglst = pq.Where(x => x.source == (Source)source && x.chapterid == chapter.chapterid && x.pagelocal != "").OrderBy(x=>x.sort).ToList();
                 pglst.ForEach(x =>
                 {
                     chapterScenes.Add(new BookChapterInfo()

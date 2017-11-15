@@ -29,6 +29,7 @@ namespace Crawer.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
+
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
@@ -51,29 +52,28 @@ namespace Crawer.Jobs
                     string chapterpage = cp.chapterurl.Replace("http://www.manhuatai.com/", "");
                     var imgdata = _helper.Get(null, chapterpage);
                     Regex imgpath = new Regex("imgpath:\"(?<key1>.*?)\",");
+                    Regex starindex = new Regex("startimg:(?<key1>.*?),");
                     Regex totalimg = new Regex("totalimg:(?<key1>.*?),");
                     Regex pageid = new Regex("pageid:(?<key1>.*?),");
                     Regex domain = new Regex("domain:\"(?<key1>.*?)\",");
                     Regex comic_size = new Regex("comic_size:\"(?<key1>.*?)\"");
-                    var _imgpath = imgpath.Match(imgdata).Groups["key1"].Value;
+                    var _imgpath = imgpath.Match(imgdata).Groups["key1"].Value.Replace("\\\\", "#").Replace("\\", "").Replace("#", "\\");
                     var _totalimg = totalimg.Match(imgdata).Groups["key1"].Value;
                     var _pageid = pageid.Match(imgdata).Groups["key1"].Value;
                     var _domain = domain.Match(imgdata).Groups["key1"].Value;
                     var _comic_size = comic_size.Match(imgdata).Groups["key1"].Value;
                     List<Page> pglst = new List<Page>();
                     int imgcount = int.Parse(_totalimg);
-                    string imgdecodepath = DecodeHelper.Decode(_imgpath, int.Parse(_pageid)).Replace("Z%","%");
+                    int start = int.Parse(starindex.Match(imgdata).Groups["key1"].Value.Trim());
+                    string imgdecodepath = DecodeHelper.Decode(_imgpath, int.Parse(_pageid));
                     imgdecodepath = HttpUtility.UrlDecode(imgdecodepath);
-                    var matches = Regex.Matches(imgdecodepath, "[a-zA-Z]{2}/");
-                    for (int i = 0; i < matches.Count; i++)
-                    {
-                        imgdecodepath = imgdecodepath.Replace(matches[i].Value, matches[i].Value.Substring(0, 1) + matches[i].Value.Substring(2, 1));
-                    }
+                   
                     for (int i = 0; i < imgcount; i++)
                     {
+                        string pgsource = "http://mhpic." + _domain + "/comic/" + imgdecodepath + start + ".jpg" + _comic_size;
                         pglst.Add(new Page()
                         {
-                            pagesource = "http://mhpic." + _domain + "/comic/" + imgdecodepath + (i+1) + ".jpg" + _comic_size,
+                            pagesource = pgsource,
                             chapterid = cp.chapterid,
                             modify = dt,
                             shortdate = shortdate,
@@ -81,6 +81,7 @@ namespace Crawer.Jobs
                             source = cp.source,
                             pagelocal = "",
                         });
+                        start = start + 1;
                     }
 
                     dbcontext.BulkInsert(pglst);

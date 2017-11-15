@@ -35,9 +35,15 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
-            IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && a.shortdate == shortdate).Take(200).ToList();
+            List<Chapter> needlst = cpq.Where(x => x.source == Source.dongmanmanhua && x.chaptername == null).ToList();
+            List<Chapter> grouplst = needlst.GroupBy(x => new { x.comicid }).Select(x => x.FirstOrDefault()).ToList();
+            List<string> comicidlst = grouplst.Select(x => x.comicid).ToList();
+            IQuery<Comic> q = dbcontext.Query<Comic>();
+
+            //List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && a.shortdate == shortdate).Take(200).ToList();
+
+            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && comicidlst.Contains(a.comicid)).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -47,17 +53,21 @@ namespace Crawer.Jobs
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.dongmanmanhua).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ).ToList();
                 if (cplst.Count == 0)
                 {
                     try
                     {
                         string bookurl = comic.bookurl.Replace("https://www.dongmanmanhua.cn/", "");
                         var bookdata = _helper.Get(null, bookurl);
+                        
                         string pattern = "<li id=\"episode_(?<key1>.*?)\" data-episode-no=\"(?<key2>.*?)\">(?<key3>.*?)</li>";
                         MatchCollection matches = Regex.Matches(bookdata, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                       
-                        int pagecount = (int)Math.Ceiling(int.Parse(matches[0].Groups[1].Value)/10.0);
+
+                        string pattern_page = "<span class=\"tx\">#(?<key1>.*?)</span>";
+                        MatchCollection matches_page = Regex.Matches(bookdata, pattern_page, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+                        int pagecount = (int)Math.Ceiling(int.Parse(matches_page[0].Groups[1].Value)/10.0);
                         for (int i = 0; i < matches.Count; i++)
                         {
                             var lihtml  = matches[i].Groups["key3"].Value;
@@ -67,7 +77,9 @@ namespace Crawer.Jobs
                             Regex reg2 = new Regex("<span class=\"tx\">#(?<key1>.*?)</span>");
                             Match match2 = reg2.Match(lihtml);
                             int sort =int.Parse(match2.Groups["key1"].Value);
-                            Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
+                            //Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
+                            //Match match3 = reg3.Match(lihtml);
+                            Regex reg3 = new Regex("alt=\"(?<key1>.*?)\"");
                             Match match3 = reg3.Match(lihtml);
                             string chaptername = match3.Groups["key1"].Value;
 
@@ -109,8 +121,11 @@ namespace Crawer.Jobs
                                 Regex reg2 = new Regex("<span class=\"tx\">#(?<key1>.*?)</span>");
                                 Match match2 = reg2.Match(lihtml);
                                 int sort = int.Parse(match2.Groups["key1"].Value);
-                                Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
+                                //Regex reg3 = new Regex("<span class=\"subj\"><span>(?<key1>.*?)</span></span>");
+                                //Match match3 = reg3.Match(lihtml);
+                                Regex reg3 = new Regex("alt=\"(?<key1>.*?)\"");
                                 Match match3 = reg3.Match(lihtml);
+                          
                                 string chaptername = match3.Groups["key1"].Value;
 
                                 Regex reg4 = new Regex("src=\"(?<key1>.*?)\"");
@@ -160,7 +175,8 @@ namespace Crawer.Jobs
 
             if (chapterlst.Count>0)
             {
-                dbcontext.BulkInsert(chapterlst);
+                
+                dbcontext.BulkInsert(chapterlst,null,360000);
             }
         }
 

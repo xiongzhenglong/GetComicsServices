@@ -123,22 +123,31 @@
     <Compile Include="JobConfig.cs" />
     <Compile Include="Jobs\163\_163_Chapter_Job.cs" />
     <Compile Include="Jobs\163\_163_Page_Job.cs" />
+    <Compile Include="Jobs\163\_163_Update_Job.cs" />
     <Compile Include="Jobs\ChapterStatusUp_Job.cs" />
     <Compile Include="Jobs\Manhuatai\Manhuatai_Chapter_Job.cs" />
     <Compile Include="Jobs\Manhuatai\Manhuatai_Page_Job.cs" />
+    <Compile Include="Jobs\Manhuatai\Manhuatai_Update_Job.cs" />
+    <Compile Include="Jobs\QQ\QQ_Key_Job.cs" />
+    <Compile Include="Jobs\QQ\QQ_Page_Job_Vip.cs" />
+    <Compile Include="Jobs\QQ\QQ_VipFreeBook_Job.cs" />
+    <Compile Include="Jobs\U17\U17_Update_Job.cs" />
+    <Compile Include="Jobs\Zymk\Zymk_Update_Job.cs" />
+    <Compile Include="old\Mh160\Mh160_Chapter_Job.cs" />
+    <Compile Include="old\Mh160\Mh160_Page_Job.cs" />
     <Compile Include="Jobs\NoticeStatusUp_Job.cs" />
     <Compile Include="Jobs\Comic_Job.cs" />
     <Compile Include="Jobs\dongmanmanhua\dongman_Chapter_Job.cs" />
     <Compile Include="Jobs\dongmanmanhua\dongman_Page_Job.cs" />
-    <Compile Include="Jobs\dongmanmanhua\old\dongman_Page_Up_Job.cs" />
+    <Compile Include="old\dongman_Page_Up_Job.cs" />
     <Compile Include="Jobs\dongmanmanhua\dongman_Update_Job.cs" />
     <Compile Include="Jobs\DownAndUp_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Chapter_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job_Free.cs" />
-    <Compile Include="Jobs\QQ\old\QQ_Page_Up_Job.cs" />
+    <Compile Include="old\QQ_Page_Up_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Update_Job.cs" />
-    <Compile Include="Jobs\Temp\YueWen_Job.cs" />
+    <Compile Include="old\Temp\YueWen_Job.cs" />
     <Compile Include="Jobs\U17\U17_Chapter_Job.cs" />
     <Compile Include="Jobs\U17\U17_Page_Job.cs" />
     <Compile Include="Jobs\Zymk\Zymk_Chapter_Job.cs" />
@@ -179,6 +188,10 @@
     <ProjectReference Include="..\Framework.Common\Framework.Common.csproj">
       <Project>{c5a083fb-3ba2-4e32-86a4-bc3e6c2de116}</Project>
       <Name>Framework.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Framework.Redis\Framework.Redis.csproj">
+      <Project>{0909feb5-4892-4e9a-99a3-40cc538a1bc9}</Project>
+      <Name>Framework.Redis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Lib\Lib.csproj">
       <Project>{548138fb-44e8-499c-86e6-0d000a4b9e93}</Project>

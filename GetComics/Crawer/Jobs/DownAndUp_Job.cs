@@ -14,9 +14,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WebPWrapper;
 
 namespace Crawer.Jobs
 {
@@ -124,6 +126,8 @@ namespace Crawer.Jobs
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DownAndUpPage_Job));
         MsSqlContext dbcontext;
+        private static int pageIndex = 1;
+        private static int pageSize = 100;
         public DownAndUpPage_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
@@ -133,69 +137,102 @@ namespace Crawer.Jobs
         {
             //IDbCommandInterceptor interceptor = new DbCommandInterceptor();
             //dbcontext.Session.AddInterceptor(interceptor);
+      
             DateTime dt = DateTime.Now;
             string shortdate = dt.ToString("yyyy-MM-dd");           
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Page> plst = cpq.Where(a => a.pagesource.Length != 0 && a.pagelocal.Length == 0).Take(200).ToList();
-
+            List<Page> plst = cpq.Where(a => a.pagesource.Length != 0 && a.pagelocal.Length == 0).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+            if (plst.Count < pageSize)
+                pageIndex = 1;
+            else
+                pageIndex++;
             HttpWebHelper web = new HttpWebHelper();
+            
             foreach (var p in plst)
             {
-
+                string filePath = AppDomain.CurrentDomain.BaseDirectory + "DownLoadImgs/" + p.Id + ".jpg";
                 try
                 {
+                   
                     string refer = "";
                     if (p.source == Source.dongmanmanhua)
                     {
                         var chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
-                        refer = chapter.chapterurl ;
+                        refer = chapter.chapterurl;
+                        Stream stream = web.GetStream(p.pagesource, 3000, "", null, refer, null);
+                        Image img = Image.FromStream(stream);
+
+                        stream.Close();
+
+                        img.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    }
+                    else
+                    {
+                        WebClient myclient = new WebClient();
+                        myclient.DownloadFile(p.pagesource, filePath);
                     }
                    
-                    Stream stream = web.GetStream(p.pagesource,300,"",null,refer, null);
-                    Image img = Image.FromStream(stream);
-                    stream.Close();
-                    string filePath = AppDomain.CurrentDomain.BaseDirectory +"DownLoadImgs/"+ p.Id +".jpg";
-                    img.Save(filePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    
+                   
                     string localimg = UcHelper.uploadFile("Page/"+p.Id + ".jpg", filePath);
                     p.pagelocal = localimg;
                     p.modify = dt;
                     dbcontext.Update(p);
-                    //dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
-                    //{
-                    //    downstatus = DownChapter.上传完图片,
-                    //    modify = dt
-                    //});
+                  
                     File.Delete(filePath);
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex.Message);
-                    Chapter chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
-                    chapter.retry = chapter.retry + 1;
-                    chapter.modify = dt;
-                    if (chapter.retry > 30)
+                    try
                     {
-                        p.pagestate = PageState.失败;
+                        WebClient myclient = new WebClient();
+                        myclient.DownloadFile(p.pagesource, filePath);
+                        Bitmap bytes;
+                        using (WebP webp = new WebP())
+                            bytes = webp.Load(filePath);
+                        File.Delete(filePath);
+                        bytes.Save(filePath);
+                        string localimg = UcHelper.uploadFile("Page/" + p.Id + ".jpg", filePath);
+                        p.pagelocal = localimg;
                         p.modify = dt;
                         dbcontext.Update(p);
+                      
+                        File.Delete(filePath);
+                        continue;
                     }
-                    dbcontext.Update(chapter);
+                    catch (Exception)
+                    {
+
+                        logger.Error(ex.Message);
+                        Chapter chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
+                        chapter.retry = chapter.retry + 1;
+                        chapter.modify = dt;
+                        if (chapter.retry > 30)
+                        {
+                            p.pagestate = PageState.失败;
+                            p.modify = dt;
+                            dbcontext.Update(p);
+                        }
+                        dbcontext.Update(chapter);
+
+                        //dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
+                        //{
+                        //    retry = a.retry + 1,
+                        //    modify = dt
+                        //});
+                        Err_PageJob err = new Err_PageJob();
+                        err.imgurl = p.pagesource;
+                        err.source = p.source;
+                        err.errtype = ErrPage.限制访问;
+                        err.modify = dt;
+                        err.shortdate = shortdate;
+                        err.message = ex.Message;
+                        err = dbcontext.Insert(err);
+                        continue;
+                    }
+                   
                     
-                    //dbcontext.Update<Chapter>(a => a.chapterid == p.chapterid, a => new Chapter()
-                    //{
-                    //    retry = a.retry + 1,
-                    //    modify = dt
-                    //});
-                    Err_PageJob err = new Err_PageJob();
-                    err.imgurl = p.pagesource;
-                    err.source = p.source;
-                    err.errtype = ErrPage.限制访问;
-                    err.modify = dt;
-                    err.shortdate = shortdate;
-                    err.message = ex.Message;
-                    err = dbcontext.Insert(err);
-                    continue;
                 }
               
                

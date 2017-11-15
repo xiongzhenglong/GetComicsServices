@@ -109,11 +109,11 @@ namespace Lib.Helper
                 request.CookieContainer = new CookieContainer();
                 request.CookieContainer.Add(cookies);
             }
-            else
-            {
-                request.CookieContainer = new CookieContainer();
-                request.CookieContainer.Add(Cookies);
-            }
+            //else
+            //{
+            //    request.CookieContainer = new CookieContainer();
+            //    request.CookieContainer.Add(Cookies);
+            //}
             var v = request.GetResponse() as HttpWebResponse;
 
             return v;
@@ -185,13 +185,14 @@ namespace Lib.Helper
             }
 
             request.Method = "POST";
-            request.Headers.Add("Accept-Language", "zh-CN,en-GB;q=0.5");
+            request.Headers.Add("Accept-Language", "zh-CN,en-GB;q=0.5");      
             request.Accept = accept;
             request.Referer = referer;
             request.Headers["Accept-Language"] = "en-US,en;q=0.5";
             request.UserAgent = DefaultUserAgent;
             request.ContentType = contentType;
             request.Headers["Pragma"] = "no-cache";
+           
             if (keepAlive.HasValue)
             {
                 request.KeepAlive = keepAlive.Value;
@@ -201,11 +202,11 @@ namespace Lib.Helper
                 request.CookieContainer = new CookieContainer();
                 request.CookieContainer.Add(cookies);
             }
-            else
-            {
-                request.CookieContainer = new CookieContainer();
-                request.CookieContainer.Add(Cookies);
-            }
+            //else
+            //{
+            //    request.CookieContainer = new CookieContainer();
+            //    request.CookieContainer.Add(Cookies);
+            //}
 
             if (headers != null)
             {

@@ -34,6 +34,7 @@ namespace Crawer.Jobs
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             List<Chapter> cplst = cpq.Where(x => x.source == Source.U17 && x.downstatus == DownChapter.待处理链接 && x.isvip == "0").Take(200).ToList();
 
+
             List<int> ids = cplst.Select(x => x.Id).ToList();
             dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
             {
@@ -45,7 +46,7 @@ namespace Crawer.Jobs
             {
                 try
                 {
-                    var imgdata = _helper.Get<U17_Page_Api>(null, string.Format(pageurl, cp.chapterid.Replace(cp.comicid+"_", "")));
+                    var imgdata = _helper.Get<U17_Page_Api>(null, string.Format(pageurl, cp.chapterid.Replace(cp.comicid+"_","")));
 
                     List<Page> pglst = new List<Page>();
                     int sort = 0;

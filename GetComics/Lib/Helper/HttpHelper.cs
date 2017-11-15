@@ -22,6 +22,7 @@ namespace Lib.Helper
         {
             this._baseIPAddress = ipaddress;
             _httpClient = new HttpClient { BaseAddress = new Uri(_baseIPAddress) };
+ 
             //_httpClient.DefaultRequestHeaders.Add("X-AuthToken", "MYGEc6789oPTmXfuiKlpKUYE");
 
         }

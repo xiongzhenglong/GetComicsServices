@@ -85,7 +85,8 @@ namespace Crawer.Jobs
                 string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
                 IQuery<Chapter> cpq = dbcontext.Query<Chapter>();//x.comicid == "1_524356" 
                 IQuery<PageHis> phisq = dbcontext.Query<PageHis>();
-                List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip.Equals("1")).Take(200).ToList();
+                //List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.待处理链接 && x.isvip.Equals("1")).Take(200).ToList();
+                List<Chapter> cplst = cpq.Where(x => x.source == Source.QQ && x.downstatus == DownChapter.上传完图片 && x.isvip.Equals("1")).Take(200).ToList();
                 List<int> ids = cplst.Select(x => x.Id).ToList();
                 dbcontext.Update<Chapter>(a => ids.Contains(a.Id), a => new Chapter()
                 {
@@ -157,13 +158,14 @@ namespace Crawer.Jobs
                                         selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
 
                                         //selenium.FindElement(By.Id("u")).Clear();
-                                        //selenium.FindElement(By.Id("u")).SendKeys("3337049653");
+                                        //selenium.FindElement(By.Id("u")).SendKeys("1434299101");
                                         //selenium.FindElement(By.Id("p")).Clear();
-                                        //selenium.FindElement(By.Id("p")).SendKeys("eryuetian1");
+                                        //selenium.FindElement(By.Id("p")).SendKeys("zhangyin123");
 
                                         selenium.FindElement(By.Id("login_button")).Click();
                                     }
                                     selenium.SwitchTo().DefaultContent();
+                                 
                                 }
                                 catch (Exception ex)
                                 {
@@ -171,7 +173,22 @@ namespace Crawer.Jobs
                                     logger.Error(errMsg);
                                 }
                             }
+                            selenium.Navigate().GoToUrl("http://ac.qq.com/Home/buyList");
+                            ICookieJar listCookie = selenium.Manage().Cookies;
+                            // IList<Cookie> listCookie = selenuim.Manage( ).Cookies.AllCookies;//只是显示 可以用Ilist对象
+                            //显示初始Cookie的内容
+                            Console.WriteLine("--------------------");
+                            Console.WriteLine($"当前Cookie集合的数量：\t{listCookie.AllCookies.Count}");
+                            for (int i = 0; i < listCookie.AllCookies.Count; i++)
+                            {
 
+                                Console.WriteLine($"Cookie的名称:{listCookie.AllCookies[i].Name}");
+                                Console.WriteLine($"Cookie的值:{listCookie.AllCookies[i].Value}");
+                                Console.WriteLine($"Cookie的所在域:{listCookie.AllCookies[i].Domain}");
+                                Console.WriteLine($"Cookie的路径:{listCookie.AllCookies[i].Path}");
+                                Console.WriteLine($"Cookie的过期时间:{listCookie.AllCookies[i].Expiry}");
+                                Console.WriteLine("-----");
+                            }
                             frames = selenium.FindElements(By.TagName("iframe"));
                             IWebElement checkVipFrame = null;
                             foreach (var frame in frames)
@@ -214,8 +231,8 @@ namespace Crawer.Jobs
                                                 err = dbcontext.Insert(err);
                                             }
                                             isHasMoney = false;
-                                            Thread.Sleep(3600000);
-                                            break;
+                                            //Thread.Sleep(3600000);
+                                            continue;
                                         }
                                         else
                                             isHasMoney = true;

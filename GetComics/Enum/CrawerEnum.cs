@@ -23,7 +23,7 @@ namespace CrawerEnum
         Zymk,
         Manhuatai,
         _163,
-        mh160
+        mh160=99
     }
 
     public enum ErrComic

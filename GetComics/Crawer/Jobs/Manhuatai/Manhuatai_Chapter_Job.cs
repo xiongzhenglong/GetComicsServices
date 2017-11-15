@@ -19,7 +19,7 @@ namespace Crawer.Jobs
     [DisallowConcurrentExecution]
     public class Manhuatai_Chapter_Job : IJob
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(Zymk_Chapter_Job));
+        private static readonly ILog logger = LogManager.GetLogger(typeof(Manhuatai_Chapter_Job));
         MsSqlContext dbcontext;
         static HttpHelper _helper = new HttpHelper("http://www.manhuatai.com");
         public Manhuatai_Chapter_Job()

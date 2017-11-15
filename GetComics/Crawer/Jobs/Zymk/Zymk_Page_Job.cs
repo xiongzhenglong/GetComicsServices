@@ -48,23 +48,27 @@ namespace Crawer.Jobs
                     string chapterpage = cp.chapterurl.Replace("http://www.zymk.cn/", "");
                     var imgdata = _helper.Get(null, chapterpage);
                     Regex imgpath = new Regex("chapter_addr:\"(?<key1>.*?)\",");
+                    Regex starindex = new Regex("start_var:(?<key1>.*?),");
                     Regex totalimg = new Regex("end_var:(?<key1>.*?),");
                     Regex pageid = new Regex("chapter_id:(?<key1>.*?),");
                     Regex domain = new Regex("domain:\"(?<key1>.*?)\",");
                     Regex comic_size = new Regex("middle:\"(?<key1>.*?)\"");
-                    var _imgpath = imgpath.Match(imgdata).Groups["key1"].Value;
+                    var _imgpath = imgpath.Match(imgdata).Groups["key1"].Value.Replace("\\\\", "#").Replace("\\", "").Replace("#", "\\");
                     var _totalimg = totalimg.Match(imgdata).Groups["key1"].Value;
                     var _pageid = pageid.Match(imgdata).Groups["key1"].Value;
                     var _domain = domain.Match(imgdata).Groups["key1"].Value;
                     var _comic_size = comic_size.Match(imgdata).Groups["key1"].Value;
+                    int start = int.Parse(starindex.Match(imgdata).Groups["key1"].Value.Trim());
                     List<Page> pglst = new List<Page>();
                     int imgcount = int.Parse(_totalimg);
+                    
                     string imgdecodepath = DecodeHelper.Decode(_imgpath, int.Parse(_pageid));
                     for (int i = 0; i < imgcount; i++)
                     {
+                        string pgsource = "http://mhpic." + _domain + "/comic/" + imgdecodepath + start + ".jpg" + _comic_size;
                         pglst.Add(new Page()
                         {
-                            pagesource = "http://mhpic." + _domain + "/comic/" + imgdecodepath + (i+1) + ".jpg" + _comic_size,
+                            pagesource = pgsource,
                             chapterid = cp.chapterid,
                             modify = dt,
                             shortdate = shortdate,
@@ -72,6 +76,7 @@ namespace Crawer.Jobs
                             source = cp.source,
                             pagelocal = "",
                         });
+                        start = start + 1;
                     }
                    
                     dbcontext.BulkInsert(pglst);

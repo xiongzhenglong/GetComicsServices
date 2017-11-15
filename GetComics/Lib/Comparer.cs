@@ -22,4 +22,20 @@ namespace Lib
             return hashchapterid;
         }
     }
+
+
+    public class VIPFreeComic_Comparer : IEqualityComparer<VIPFreeComic>
+    {
+        public bool Equals(VIPFreeComic x,VIPFreeComic y)
+        {
+            if (Object.ReferenceEquals(x, y)) return true;
+            return x != null && y != null && x.comicid == y.comicid;
+        }
+
+        public int GetHashCode(VIPFreeComic obj)
+        {
+            int hashchapterid = obj.comicid.GetHashCode();
+            return hashchapterid;
+        }
+    }
 }
