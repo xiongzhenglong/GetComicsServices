@@ -126,11 +126,19 @@ namespace Crawer.Jobs
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DownAndUpPage_Job));
         MsSqlContext dbcontext;
-        private static int pageIndex = 1;
-        private static int pageSize = 100;
+        //private static int pageIndex = 1;
+        //private static int pageSize = 100;
+        private static int m_DownTotal = 0;
+        private static int m_DownIndex = 0;
+
         public DownAndUpPage_Job()
         {
             dbcontext = new MsSqlContext("Mssql".ValueOfAppSetting());
+            string strDownTotal = "DownTotal".ValueOfAppSetting();
+            string strDownIndex = "DownIndex".ValueOfAppSetting();
+            if (strDownTotal != null && strDownIndex != null && int.TryParse(strDownTotal, out m_DownTotal) && int.TryParse(strDownIndex, out m_DownIndex))
+            {
+            }
         }
 
         public void Execute(IJobExecutionContext context)
@@ -142,11 +150,21 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");           
             IQuery<Page> cpq = dbcontext.Query<Page>();
             IQuery<Chapter> cq = dbcontext.Query<Chapter>();
-            List<Page> plst = cpq.Where(a => a.pagesource.Length != 0 && a.pagelocal.Length == 0).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
-            if (plst.Count < pageSize)
-                pageIndex = 1;
+
+            List<Page> plst;
+
+            if (m_DownTotal > 0 )
+            {
+                plst = cpq.Where(a => a.pagestate == PageState.None && a.Id % m_DownTotal == m_DownIndex).Take(100).ToList();
+            }
             else
-                pageIndex++;
+                plst = cpq.Where(a => a.pagestate== PageState.None).Take(100).ToList();
+
+            //if (plst.Count < pageSize)
+            //    pageIndex = 1;
+            //else
+            //    pageIndex++;
+
             HttpWebHelper web = new HttpWebHelper();
             
             foreach (var p in plst)
@@ -156,7 +174,7 @@ namespace Crawer.Jobs
                 {
                    
                     string refer = "";
-                    if (p.source == Source.dongmanmanhua)
+                    if (p.source == Source.dongmanmanhua || p.source==Source.dmzj)
                     {
                         var chapter = cq.Where(x => x.chapterid == p.chapterid).FirstOrDefault();
                         refer = chapter.chapterurl;
@@ -172,11 +190,10 @@ namespace Crawer.Jobs
                         WebClient myclient = new WebClient();
                         myclient.DownloadFile(p.pagesource, filePath);
                     }
-                   
-                    
-                   
+
                     string localimg = UcHelper.uploadFile("Page/"+p.Id + ".jpg", filePath);
                     p.pagelocal = localimg;
+                    p.pagestate = PageState.成功;
                     p.modify = dt;
                     dbcontext.Update(p);
                   
@@ -196,6 +213,7 @@ namespace Crawer.Jobs
                         string localimg = UcHelper.uploadFile("Page/" + p.Id + ".jpg", filePath);
                         p.pagelocal = localimg;
                         p.modify = dt;
+                        p.pagestate = PageState.成功;
                         dbcontext.Update(p);
                       
                         File.Delete(filePath);
@@ -266,7 +284,7 @@ namespace Crawer.Jobs
                 try
                 {
                     string refer = "";
-                    if (p.source == Source.dongmanmanhua)
+                    if (p.source == Source.dongmanmanhua || p.source == Source.dmzj)
                     {
                         
                         refer = p.bookurl;

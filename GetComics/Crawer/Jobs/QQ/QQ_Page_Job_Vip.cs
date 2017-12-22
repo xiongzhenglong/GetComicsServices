@@ -55,14 +55,5 @@ namespace Crawer.Jobs
         }
     }
 
-    public class qq_buy_req
-    {
-        public string tokenKey { get; set; }
-        public string comic_id { get; set; }
-        public string chapter_id { get; set; }
-        public string buy_type { get; set; }
-        public string pay_type { get; set; }
-        public string uin { get; set; }
-        public string skey { get; set; }
-    }
+
 }

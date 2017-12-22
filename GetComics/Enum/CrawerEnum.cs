@@ -11,7 +11,8 @@ namespace CrawerEnum
         待处理链接,
         处理完链接,
         上传完图片,
-        处理中
+        处理中,
+        无法处理=99
  
     }
 
@@ -23,6 +24,8 @@ namespace CrawerEnum
         Zymk,
         Manhuatai,
         _163,
+        dmzj,
+        Icartoons,
         mh160=99
     }
 
@@ -58,7 +61,11 @@ namespace CrawerEnum
 
     public enum PageState
     {
+        None,
         失败=1,
+        成功
+
+        
 
     }
 }

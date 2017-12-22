@@ -31,7 +31,7 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string ticks = dt.Ticks.ToString();
             string shortdate = dt.ToString("yyyy-MM-dd");
-            string updatedatetime = shortdate + " " + ((dt.Hour / 6 + 1) * 6).ToString();
+            string updatedatetime = shortdate + " " + ((dt.Hour / 0.5 + 1) * 0.5).ToString();
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();

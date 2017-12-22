@@ -61,9 +61,9 @@ namespace Crawer.Jobs
                     int start = int.Parse(starindex.Match(imgdata).Groups["key1"].Value.Trim());
                     List<Page> pglst = new List<Page>();
                     int imgcount = int.Parse(_totalimg);
-                    
+                    imgcount = imgcount - start;
                     string imgdecodepath = DecodeHelper.Decode(_imgpath, int.Parse(_pageid));
-                    for (int i = 0; i < imgcount; i++)
+                    for (int i = 0; i <= imgcount; i++)
                     {
                         string pgsource = "http://mhpic." + _domain + "/comic/" + imgdecodepath + start + ".jpg" + _comic_size;
                         pglst.Add(new Page()

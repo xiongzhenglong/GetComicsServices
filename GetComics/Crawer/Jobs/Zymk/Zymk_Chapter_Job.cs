@@ -35,6 +35,7 @@ namespace Crawer.Jobs
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
             List<Comic> comiclst = q.Where(a => a.source == Source.Zymk && a.shortdate == shortdate).Take(200).ToList();
+           
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -53,7 +54,7 @@ namespace Crawer.Jobs
                       
                         string bookurl = comic.bookurl.Replace("http://www.zymk.cn", "");
                         var bookdata = _helper.Get(null, bookurl);
-                        string pattern = "<li class=\"item\" data-id=\"(?<key1>.*?)\"><a href=\"(?<key2>.*?)\" title=\"(?<key3>.*?)\">(?<key4>.*?)</a></li>";
+                        string pattern = "<li class=\"(?<key5>.*?)\" data-id=\"(?<key1>.*?)\"><a href=\"(?<key2>.*?)\" title=\"(?<key3>.*?)\">(?<key4>.*?)</a>";
                         MatchCollection matches = Regex.Matches(bookdata, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                         for (int i = 0; i < matches.Count; i++)
                         {
@@ -79,7 +80,8 @@ namespace Crawer.Jobs
                                 shortdate = shortdate,
                             });
                         }
-                        
+
+                      
                     }
                     catch (Exception ex)
                     {

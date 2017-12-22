@@ -9,6 +9,7 @@
     <!--章节状态更新-->
     <!--通知状态更新-->
     <!--<job name="Comic_Job">* * * * * ? </job>-->
+    <!--<job name="SunWei">* * * * * ? </job>-->
 
     <!--<job name="ChapterStatusUp_Job">* * * * * ? </job>-->
 
@@ -22,11 +23,12 @@
     <!--QQ章节图片更新-->
     <!--QQ章节目录更新-->
     <!--<job name="QQ_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="QQ_Key_Job">0 0/15 * * * ? </job>-->
     <!--<job name="QQ_Key_Job">* * * * * ? </job>-->
 
     <!--<job name="QQ_Page_Job">* * * * * ? </job>-->
 
-    <job name="QQ_Page_Job_Free">* * * * * ? </job>
+    <!--<job name="QQ_Page_Job_Free">* * * * * ? </job>-->
 
     <!--<job name="QQ_Page_Job_Vip">* * * * * ? </job>-->
 
@@ -46,7 +48,7 @@
     
 
 
-    <!--<job name="dongman_Update_Job">0 0/5 * * * ? </job>-->
+    <job name="dongman_Update_Job">* * * * * ? </job>
 
     <!--<job name="Zymk_Chapter_Job">* * * * * ? </job>-->
     <!--<job name="Zymk_Update_Job">* * * * * ? </job>-->
@@ -70,6 +72,26 @@
     <!--<job name="DownAndUpChapter_Job">* * * * * ? </job>-->
     <!--<job name="DownAndUpComic_Job">* * * * * ? </job>-->
     <!--<job name="DownAndUpPage_Job">* * * * * ? </job>-->
+
+    <!--<job name="dmzj_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="dmzj_Comic_Desc_Job">* * * * * ? </job>-->
+    <!--<job name="dmzj_Comic_New_Job">* * * * * ? </job>-->
+    <!--<job name="dmzj_Comic_Job">* * * * * ? </job>-->
+    <!--<job name="dmzj_Page_Job">* * * * * ? </job>-->
+    <!--<job name="dmzj_Update_Job">* * * * * ? </job>-->
+
+
+    <!--<job name="Icartoons_Comic_Job">* * * * * ? </job>-->
+    <!--<job name="Icartoons_Comic_Desc_Job">* * * * * ? </job>-->
+    <!--<job name="Icartoons_Chapter_Job">* * * * * ? </job>-->
+    <!--<job name="Icartoons_Page_Job">* * * * * ? </job>-->
+    <!--<job name="Icartoons_Update_Job">* * * * * ? </job>-->
+    
+    
+    
+    <!--<job name="YueWen_Job">* * * * * ? </job>-->
+    
+    
 
 
 

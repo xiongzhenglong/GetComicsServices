@@ -67,6 +67,10 @@
       <HintPath>..\packages\HtmlAgilityPack.1.6.0\lib\Net45\HtmlAgilityPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Jint, Version=0.0.0.0, Culture=neutral, PublicKeyToken=2e92ba9c8d81157f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jint.2.11.58\lib\net451\Jint.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
@@ -125,12 +129,24 @@
     <Compile Include="Jobs\163\_163_Page_Job.cs" />
     <Compile Include="Jobs\163\_163_Update_Job.cs" />
     <Compile Include="Jobs\ChapterStatusUp_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Chapter_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Comic_Desc_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Comic_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Comic_New_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Page_Job.cs" />
+    <Compile Include="Jobs\dmzj\dmzj_Update_Job.cs" />
+    <Compile Include="Jobs\Icartoons\Icartoons_Chapter_Job.cs" />
+    <Compile Include="Jobs\Icartoons\Icartoons_Comic_Desc_Job.cs" />
+    <Compile Include="Jobs\Icartoons\Icartoons_Comic_Job.cs" />
+    <Compile Include="Jobs\Icartoons\Icartoons_Page_Job.cs" />
+    <Compile Include="Jobs\Icartoons\Icartoons_Update_Job.cs" />
     <Compile Include="Jobs\Manhuatai\Manhuatai_Chapter_Job.cs" />
     <Compile Include="Jobs\Manhuatai\Manhuatai_Page_Job.cs" />
     <Compile Include="Jobs\Manhuatai\Manhuatai_Update_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Key_Job.cs" />
     <Compile Include="Jobs\QQ\QQ_Page_Job_Vip.cs" />
     <Compile Include="Jobs\QQ\QQ_VipFreeBook_Job.cs" />
+    <Compile Include="Jobs\SunWei.cs" />
     <Compile Include="Jobs\U17\U17_Update_Job.cs" />
     <Compile Include="Jobs\Zymk\Zymk_Update_Job.cs" />
     <Compile Include="old\Mh160\Mh160_Chapter_Job.cs" />

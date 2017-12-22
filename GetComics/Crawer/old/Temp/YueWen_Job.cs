@@ -10,7 +10,9 @@ using log4net;
 using Quartz;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Crawer.Jobs
@@ -32,9 +34,10 @@ namespace Crawer.Jobs
             //List<YueWenIm> bklst = ExcelHelper.Import3(@"C:\Users\Administrator\Desktop\阅文版权商下-未上架追书图书-2017-10-26.xlsx").ToList();
             //http://ubook.3g.qq.com/8/search?key=[民调局异闻录]迷 香
             //http://ubook.3g.qq.com/8/intro?bid=679523
+            //List<YueWenIm> bklst = File.ReadAllLines(@"C:\Users\Administrator\Desktop\111111.csv",Encoding.GetEncoding("GB2312")).Select(y => y.Split(',')).Select(x => new { bookid = x[0].Replace("\"",""), bookname = x[1].Replace("\"", ""), authorname = x[2].Replace("\"", "") }).Select(x=> new YueWenIm(x.bookid,x.bookname,x.authorname)).ToList();
             IQuery<YueWen> yq = dbcontext.Query<YueWen>();
-            List<YueWen> ywlst = yq.Where(x => x.status == "0").Take(200).ToList();
-            //List<YueWen> ywlst = new List<YueWen>();
+
+            List<YueWen> ywlst = new List<YueWen>();
             //bklst.ForEach(x =>
             //{
             //    ywlst.Add(new YueWen()
@@ -51,8 +54,8 @@ namespace Crawer.Jobs
             //    });
             //});
 
-            //dbcontext.BulkInsert(ywlst,null,360000);
-          
+            //dbcontext.BulkInsert(ywlst, null, 360000);
+            ywlst = yq.Where(x => x.status == "0").Take(200).ToList();
             List<int> idlst = ywlst.Select(x=>x.Id).ToList();
 
             dbcontext.Update<YueWen>(a => idlst.Contains(a.Id), a => new YueWen()

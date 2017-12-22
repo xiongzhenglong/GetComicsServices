@@ -36,14 +36,14 @@ namespace Crawer.Jobs
             string shortdate = dt.ToString("yyyy-MM-dd");
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            List<Chapter> needlst = cpq.Where(x => x.source == Source.dongmanmanhua && x.chaptername == null).ToList();
-            List<Chapter> grouplst = needlst.GroupBy(x => new { x.comicid }).Select(x => x.FirstOrDefault()).ToList();
-            List<string> comicidlst = grouplst.Select(x => x.comicid).ToList();
+            //List<Chapter> needlst = cpq.Where(x => x.source == Source.dongmanmanhua && x.chaptername == "").ToList();
+            //List<Chapter> grouplst = needlst.GroupBy(x => new { x.comicid }).Select(x => x.FirstOrDefault()).ToList();
+            //List<string> comicidlst = grouplst.Select(x => x.comicid).ToList();
             IQuery<Comic> q = dbcontext.Query<Comic>();
 
-            //List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && a.shortdate == shortdate).Take(200).ToList();
+            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && a.shortdate == shortdate).Take(200).ToList();
 
-            List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && comicidlst.Contains(a.comicid)).Take(200).ToList();
+            //List<Comic> comiclst = q.Where(a => a.source == Source.dongmanmanhua && comicidlst.Contains(a.comicid)).Take(200).ToList();
             List<int> ids = comiclst.Select(x => x.Id).ToList();
             dbcontext.Update<Comic>(a => ids.Contains(a.Id), a => new Comic()
             {
@@ -53,7 +53,7 @@ namespace Crawer.Jobs
             List<Chapter> chapterlst = new List<Chapter>();
             foreach (var comic in comiclst)
             {
-                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.QQ).ToList();
+                List<Chapter> cplst = cpq.Where(a => a.comicid == comic.comicid && a.source == Source.dongmanmanhua).ToList();
                 if (cplst.Count == 0)
                 {
                     try
@@ -93,7 +93,6 @@ namespace Crawer.Jobs
                                 chaptername = chaptername,
                                 chapterurl = "https:" + chapterurl,
                                 sort = sort,
-
                                 comicid = comic.comicid,
                                 retry = 0,
                                 source = comic.source,
@@ -138,7 +137,6 @@ namespace Crawer.Jobs
                                     chaptername = chaptername,
                                     chapterurl = "https:" + chapterurl,
                                     sort = sort,
-
                                     comicid = comic.comicid,
                                     retry = 0,
                                     source = comic.source,

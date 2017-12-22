@@ -15,5 +15,16 @@ namespace ExcelModel
         public string channelname { get; set; }
         public string agreedid { get; set; }
         public string agreedment { get; set; }
+
+        public YueWenIm()
+        {
+
+        }
+        public YueWenIm(string bookid,string bookname,string authorname)
+        {
+            this.bookid = bookid;
+            this.bookname = bookname;
+            this.authorname = authorname;
+        }
     }
 }

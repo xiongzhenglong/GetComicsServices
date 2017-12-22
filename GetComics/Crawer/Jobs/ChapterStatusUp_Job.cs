@@ -51,10 +51,16 @@ namespace Crawer.Jobs
             List<int> waitidlst = new List<int>();
             foreach (var c in cqlst)
             {             
-                List<Page> pagenulllst = pagelst.Where(x =>x.chapterid==c.chapterid &&  x.pagelocal == "").ToList();
-                if (pagenulllst.Count==0)
+                List<Page> pagedownlst = pagelst.Where(x =>x.chapterid==c.chapterid).ToList();
+
+                if (pagedownlst.Count>0)
                 {
-                    waitidlst.Add(c.Id);
+                    List<Page> pagenulllst = pagedownlst.Where(x => x.pagelocal == "").ToList();
+                    if (pagenulllst.Count==0)
+                    {
+                        waitidlst.Add(c.Id);
+                    }
+                    
                 }
                 //c.downstatus = pagenulllst.Count > 0 ? DownChapter.处理完链接 : DownChapter.上传完图片;
                 //c.modify = dt;

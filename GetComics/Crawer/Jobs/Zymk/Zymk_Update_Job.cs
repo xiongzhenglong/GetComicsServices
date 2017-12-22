@@ -32,11 +32,11 @@ namespace Crawer.Jobs
             DateTime dt = DateTime.Now;
             string ticks = dt.Ticks.ToString();
             string shortdate = dt.ToString("yyyy-MM-dd");
-            string updatedatetime = shortdate + " " + ((dt.Hour / 6 + 1) * 6).ToString();
+            string updatedatetime = shortdate + " " + ((dt.Hour / 0.5 + 1) * 0.5).ToString();
             string yesterday = dt.AddDays(-1).ToString("yyyy-MM-dd");
             IQuery<Comic> q = dbcontext.Query<Comic>();
             IQuery<Chapter> cpq = dbcontext.Query<Chapter>();
-            IQuery<PageHis> phisq = dbcontext.Query<PageHis>();
+            
             IQuery<Page> pq = dbcontext.Query<Page>();
             IQuery<Notice> nq = dbcontext.Query<Notice>();
             List<Comic> comiclst = q.Where(a => a.source == Source.Zymk && (a.updatedatetime == null || a.updatedatetime != updatedatetime)).Take(200).ToList();
@@ -58,7 +58,8 @@ namespace Crawer.Jobs
                     {
                         string bookurl = comic.bookurl.Replace("http://www.zymk.cn", "");
                         var bookdata = _helper.Get(null, bookurl);
-                        string pattern = "<li class=\"item\" data-id=\"(?<key1>.*?)\"><a href=\"(?<key2>.*?)\" title=\"(?<key3>.*?)\">(?<key4>.*?)</a></li>";
+                        string pattern = "<li class=\"(?<key5>.*?)\" data-id=\"(?<key1>.*?)\"><a href=\"(?<key2>.*?)\" title=\"(?<key3>.*?)\">(?<key4>.*?)</a>";
+
                         MatchCollection matches = Regex.Matches(bookdata, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                         for (int i = 0; i < matches.Count; i++)
                         {
@@ -72,7 +73,6 @@ namespace Crawer.Jobs
                                 chaptername = chaptername,
                                 chapterurl = chapterurl,
                                 sort = sort,
-
                                 comicid = comic.comicid,
                                 retry = 0,
                                 source = comic.source,
@@ -87,64 +87,62 @@ namespace Crawer.Jobs
                         int delete = cplst.Except(chapterlst, new Chapter_Comparer()).Count(); // 删章
                         List<Chapter> add = chapterlst.Except(cplst, new Chapter_Comparer()).ToList();  // 新增
 
-                        if (delete > 0)
-                        {
-                            List<string> idlst = cplst.Select(x => x.chapterid).ToList();                          
+                        //if (delete > 0)
+                        //{
+                        //    List<string> idlst = cplst.Select(x => x.chapterid).ToList();  
+                        //    dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
+                        //    dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
+                        //    if (chapterlst.Count > 0)
+                        //    {
+                        //        dbcontext.BulkInsert(chapterlst);
+                        //    }
+                        //    Notice notice = new Notice();
+                        //    notice.noticeid = comic.comicid;
+                        //    notice.noticestatus = NoticeStatus.等待处理;
+                        //    notice.noticetype = NoticeType.目录变更;
+                        //    notice.source = comic.source;
+                        //    notice.shortdate = shortdate;
+                        //    notice.modify = dt;
+                        //    var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
+                        //    if (nqwait == null)
+                        //    {
+                        //        dbcontext.Insert(notice);
+                        //    }
 
-
-                            dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
-                            dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
-                            if (chapterlst.Count > 0)
-                            {
-                                dbcontext.BulkInsert(chapterlst);
-                            }
-                            Notice notice = new Notice();
-                            notice.noticeid = comic.comicid;
-                            notice.noticestatus = NoticeStatus.等待处理;
-                            notice.noticetype = NoticeType.目录变更;
-                            notice.source = comic.source;
-                            notice.shortdate = shortdate;
-                            notice.modify = dt;
-                            var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
-                            if (nqwait == null)
-                            {
-                                dbcontext.Insert(notice);
-                            }
-
-                            continue;
-                        }
-                        else
-                        {
-                            List<Chapter> mvadd = chapterlst.Except(add, new Chapter_Comparer()).ToList();
-                            string cplststr = string.Join(",", cplst.Select(x => x.chapterid).ToArray());
-                            string chapterlststr = string.Join(",", mvadd.Select(x => x.chapterid).ToArray());
-                            if (cplststr != chapterlststr) // 调序
-                            {
-                                List<string> idlst = cplst.Select(x => x.chapterid).ToList();
+                        //    continue;
+                        //}
+                        //else
+                        //{
+                        //    List<Chapter> mvadd = chapterlst.Except(add, new Chapter_Comparer()).ToList();
+                        //    string cplststr = string.Join(",", cplst.Select(x => x.chapterid).ToArray());
+                        //    string chapterlststr = string.Join(",", mvadd.Select(x => x.chapterid).ToArray());
+                        //    if (cplststr != chapterlststr) // 调序
+                        //    {
+                        //        List<string> idlst = cplst.Select(x => x.chapterid).ToList();
                                 
 
-                                dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
-                                dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
-                                if (chapterlst.Count > 0)
-                                {
-                                    dbcontext.BulkInsert(chapterlst);
-                                }
-                                Notice notice = new Notice();
-                                notice.noticeid = comic.comicid;
-                                notice.noticestatus = NoticeStatus.等待处理;
-                                notice.noticetype = NoticeType.目录变更;
-                                notice.source = comic.source;
-                                notice.shortdate = shortdate;
-                                notice.modify = dt;
-                                var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
-                                if (nqwait == null)
-                                {
-                                    dbcontext.Insert(notice);
-                                }
+                        //        dbcontext.Delete<Page>(x => idlst.Contains(x.chapterid));
+                        //        dbcontext.Delete<Chapter>(x => idlst.Contains(x.chapterid));
+                        //        if (chapterlst.Count > 0)
+                        //        {
+                        //            dbcontext.BulkInsert(chapterlst);
+                        //        }
+                        //        Notice notice = new Notice();
+                        //        notice.noticeid = comic.comicid;
+                        //        notice.noticestatus = NoticeStatus.等待处理;
+                        //        notice.noticetype = NoticeType.目录变更;
+                        //        notice.source = comic.source;
+                        //        notice.shortdate = shortdate;
+                        //        notice.modify = dt;
+                        //        var nqwait = nq.Where(x => x.noticeid == comic.comicid && x.noticestatus == NoticeStatus.等待处理 && x.noticetype == NoticeType.目录变更).FirstOrDefault();
+                        //        if (nqwait == null)
+                        //        {
+                        //            dbcontext.Insert(notice);
+                        //        }
 
-                                continue;
-                            }
-                        }
+                        //        continue;
+                        //    }
+                        //}
                         if (add.Count > 0)
                         {
                             dbcontext.BulkInsert(add);

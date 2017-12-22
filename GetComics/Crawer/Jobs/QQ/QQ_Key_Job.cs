@@ -27,7 +27,7 @@ namespace Crawer.Jobs
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(QQ_Key_Job));
         MsSqlContext dbcontext;
- 
+        static HttpWebHelper _helper = new HttpWebHelper();
         static IWebDriver selenium;
         static ChromeOptions chromeOptions;
     
@@ -103,12 +103,10 @@ namespace Crawer.Jobs
                         //selenium.FindElement(By.Id("u")).SendKeys("3283360259");
                         //selenium.FindElement(By.Id("p")).Clear();
                         //selenium.FindElement(By.Id("p")).SendKeys("xxxttt5544");
-
                         selenium.FindElement(By.Id("u")).Clear();
                         selenium.FindElement(By.Id("u")).SendKeys("1434299101");
                         selenium.FindElement(By.Id("p")).Clear();
                         selenium.FindElement(By.Id("p")).SendKeys("zhangyin123");
-
                         selenium.FindElement(By.Id("login_button")).Click();
                     }
                     selenium.SwitchTo().DefaultContent();
@@ -116,17 +114,17 @@ namespace Crawer.Jobs
                     string uin = listCookie.AllCookies.Where(x => x.Name == "uin").FirstOrDefault().Value;
                     string skey = listCookie.AllCookies.Where(x => x.Name == "skey").FirstOrDefault().Value;
                     string pc_userinfo_cookie = HttpUtility.UrlDecode(listCookie.AllCookies.Where(x => x.Name == "pc_userinfo_cookie").FirstOrDefault().Value);
-
                     Regex reg1 = new Regex("token\":\"(?<key1>.*?)\"", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                     Match match1 = reg1.Match(pc_userinfo_cookie);
                     string token = match1.Groups["key1"].Value;
 
-                    var redis = new RedisProxy();
-                    redis.Set("QQ_1434299101", new QQ_Login_Key()
-                    {
-                        skey = skey,
-                        token = token
-                    });
+                    var rs = _helper.Get("http://106.75.31.146/Cache/QQ_Login_Cache?skey="+skey+"&token="+token, Encoding.GetEncoding("UTF-8"), null, "", null, "", null, "application/x-www-form-urlencoded; charset=UTF-8");
+                    //var redis = new RedisProxy();
+                    //redis.Set("QQ_1434299101", new QQ_Login_Key()
+                    //{
+                    //    skey = skey,
+                    //    token = token
+                    //});
                     //redis.Add("QQ_1434299101", new QQ_Login_Key()
                     //{
                     //    skey = skey,
